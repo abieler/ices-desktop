@@ -40,12 +40,13 @@ Julia:
      You should now be in the julia REPL (Read-Eval-Print-Loop) environment.
      Then execute the following commands one by one from within the Julia
      REPL to install necessary packages
-
+     ```
      Pkg.add("DataFrames")
      Pkg.add("HDF5")
      Pkg.add("JLD")
      Pkg.add("PyPlot")
      Pkg.update()
+     ```
 
 
 Spice:
@@ -59,11 +60,18 @@ Git:
 ----
   1. Install git
   2. Set up git with some info if you are a first time user:
-     a) git config --global user.name "John Doe"
-     b) git config --global user.email johndoe@example.com
-
+  
+  ```
+   git config --global user.name "John Doe"
+   
+   git config --global user.email johndoe@example.com
+  ```
 
 Ices-Desktop:
+------------
+  1. From whatever directory you want to install the ices-desktop tool type
+  
+  `git clone 
 
 --------------------------------------------------------------------------------
 
