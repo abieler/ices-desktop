@@ -158,7 +158,7 @@ julia main.jl 2014-12-24T00:00:00 ALICE
 
 
 Some further notes on the .userSettings.conf file:
-..................................................
+-------------------------------------------------
 
 The .userSettings.conf file is just a stack of
 "keyWord:parameter"
