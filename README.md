@@ -185,7 +185,14 @@ second one ignored.
 You can edit this file with any text editor or via the Config.jl file.
 The general use is to call:
 ```
-julia Config.jl --option
+julia Config.jl --option ARG
+
+with some examples:
+
+julia Config.jl --tmpdir /home/abieler/tmp
+julia Config.jl --spicelib /home/abieler/ices-desktop/cspice/lib
+julia Config.jl --dataFile /home/abieler/ices-desktop/additionalData/whateverFile.dat
+julia Config.jl --doCheckShadow yes
 ```
 the following options are available ( * ) are mandatory setups)
 
