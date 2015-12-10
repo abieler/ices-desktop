@@ -71,7 +71,7 @@ Ices-Desktop:
 ------------
   1. From whatever directory you want to install the ices-desktop tool type
   
-  `git clone 
+  `git clone https://github.com/abieler/ices-desktop.git`
 
 --------------------------------------------------------------------------------
 
