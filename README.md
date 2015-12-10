@@ -8,7 +8,7 @@ Julia
   
      http://julialang.org/downloads/
 
-  2. if it does not exist, create the file .juliarc.jl in your home
+  2. if it does not exist, create the file `.juliarc.jl` in your home
      directory (where you also have .bashrc etc)
      add the following line to the .juliarc.jl file:
 
