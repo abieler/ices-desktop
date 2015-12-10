@@ -115,100 +115,133 @@ function get_tmp_dir()
 end
 
 function config_data_file(ARGS, case="dataFile:")
-  dataFile = ARGS[2]
-  @show(dataFile)
-  tmpdir = get_tmp_dir()
-  if contains(dataFile, ".h5")
-    cp(dataFile, joinpath(tmpdir, "input/"*basename(dataFile)), remove_destination=true)
-    updateSettings("dataFile:", joinpath(tmpdir, "input/"*basename(dataFile)))
-  else
-    print(" - selected data file is not in HDF5 format. Build new .h5 file? (y/n) ")
-    answ = parseCmdLineArg()
-    if !contains(answ, "n")
-      println(" -  generating new file, this might take a few seconds.")
-      cd("src")
-      run(`julia prepareAmpsData.jl $dataFile`)
-      cd("..")
-      path = dirname(dataFile)
-      baseName = basename(dataFile)
-      ext = split(baseName, ".")[end]
-      newBase = baseName[1:end-(length(ext)+1)] * ".h5"
-      newDataFile = joinpath(path, newBase)
+  try
+    dataFile = ARGS[2]
+    @show(dataFile)
+    tmpdir = get_tmp_dir()
+    if contains(dataFile, ".h5")
+      cp(dataFile, joinpath(tmpdir, "input/"*basename(dataFile)), remove_destination=true)
+      updateSettings("dataFile:", joinpath(tmpdir, "input/"*basename(dataFile)))
+    else
+      print(" - selected data file is not in HDF5 format. Build new .h5 file? (y/n) ")
+      answ = parseCmdLineArg()
+      if !contains(answ, "n")
+        println(" -  generating new file, this might take a few seconds.")
+        cd("src")
+        try
+          run(`julia prepareAmpsData.jl $dataFile`)
+        catch
+          println(" - !!!Coulnd not convert File!!!")
+        end
+        cd("..")
+        path = dirname(dataFile)
+        baseName = basename(dataFile)
+        ext = split(baseName, ".")[end]
+        newBase = baseName[1:end-(length(ext)+1)] * ".h5"
+        newDataFile = joinpath(path, newBase)
 
-      mv(newDataFile, joinpath(tmpdir, "input/"*newBase), remove_destination=true)
-      updateSettings(case, joinpath(tmpdir, "input/"*newBase))
+        mv(newDataFile, joinpath(tmpdir, "input/"*newBase), remove_destination=true)
+        updateSettings(case, joinpath(tmpdir, "input/"*newBase))
+      end
     end
+  catch
+    println(" ------------------------------------------------------------------")
+    println(" - There was an error with setting up the data file, try again later")
+    println(" - to set it with 'julia Config.jl --dataFile /path/to/data/file.dat'")
+    println(" ------------------------------------------------------------------")
   end
 
 end
 
 function config_tmpdir(ARGS)
-  rundir = ""
   try
-    rundir = ARGS[2]
-  catch
-    rundir = pwd()
-  end
+    rundir = ""
+    try
+      rundir = ARGS[2]
+    catch
+      rundir = pwd()
+    end
 
-  if isdir(rundir)
-    println(" - tmpdir already exists")
-    if (isdir(joinpath(rundir, "lib")) | isdir(joinpath(rundir, "input")))
-      print(" - directory 'lib' or 'input' already exist, remove them? (y/n): ")
-      answer = readline(STDIN)
-      if contains(lowercase(answer), "y")
-        try
-          rm(joinpath(rundir, "lib"), recursive=true)
-        catch
+    if isdir(rundir)
+      println(" - tmpdir already exists")
+      if (isdir(joinpath(rundir, "lib")) | isdir(joinpath(rundir, "input")))
+        print(" - directory 'lib' or 'input' already exist, remove them? (y/n): ")
+        answer = readline(STDIN)
+        if contains(lowercase(answer), "y")
+          try
+            rm(joinpath(rundir, "lib"), recursive=true)
+          catch
+          end
+          try
+            rm(joinpath(rundir, "input"), recursive=true)
+          catch
+          end
+          mkdir(joinpath(rundir, "lib"))
+          mkdir(joinpath(rundir, "input"))
         end
-        try
-          rm(joinpath(rundir, "input"), recursive=true)
-        catch
-        end
+      else
+        println(" - create new directories 'lib' and 'input'")
         mkdir(joinpath(rundir, "lib"))
         mkdir(joinpath(rundir, "input"))
       end
     else
-      println(" - create new directories 'lib' and 'input'")
+      mkdir(rundir)
       mkdir(joinpath(rundir, "lib"))
       mkdir(joinpath(rundir, "input"))
     end
-  else
-    mkdir(rundir)
-    mkdir(joinpath(rundir, "lib"))
-    mkdir(joinpath(rundir, "input"))
+    touch(".userSettings.conf")
+    updateSettings("tmpDir:", rundir)
+  catch
+    println(" ------------------------------------------------------------------")
+    println(" - There was an error with setting up the tmpDir, try again later")
+    println(" - to set it with 'julia Config.jl --tmpDir /path/to/dir'")
+    println(" ------------------------------------------------------------------")
   end
-  touch(".userSettings.conf")
-  updateSettings("tmpDir:", rundir)
 
 end
 
 function config_spicelib(ARGS)
-  sharedLibPath = ARGS[2]
-  tmpdir = get_tmp_dir()
-  cp(joinpath(sharedLibPath, "cspice.a"),
-     joinpath(tmpdir, "lib/cspice.a"),
-     remove_destination=true)
+  try
+    sharedLibPath = ARGS[2]
+    tmpdir = get_tmp_dir()
+    cp(joinpath(sharedLibPath, "cspice.a"),
+       joinpath(tmpdir, "lib/cspice.a"),
+       remove_destination=true)
 
-  cp(joinpath(sharedLibPath, "csupport.a"),
-     joinpath(tmpdir, "lib/csupport.a"),
-     remove_destination=true)
+    cp(joinpath(sharedLibPath, "csupport.a"),
+       joinpath(tmpdir, "lib/csupport.a"),
+       remove_destination=true)
 
-  if os == "linux"
-    objectFiles = compileLinux(tmpdir)
-    updateSettings("spicelib:", joinpath(tmpdir, "lib/spice.so"))
-  else
-    objectFiles = compileOSX(tmpdir)
-    updateSettings("spicelib:", joinpath(tmpdir, "lib/spice.dylib"))
+    if os == "linux"
+      objectFiles = compileLinux(tmpdir)
+      updateSettings("spicelib:", joinpath(tmpdir, "lib/spice.so"))
+    else
+      objectFiles = compileOSX(tmpdir)
+      updateSettings("spicelib:", joinpath(tmpdir, "lib/spice.dylib"))
+    end
+    previousDir = pwd()
+    cd(joinpath(tmpdir, "lib"))
+    run(`rm $objectFiles`)
+    cd(previousDir)
+  catch
+    println(" ------------------------------------------------------------------")
+    println(" - There was an error with setting up the spicelib, try again later")
+    println(" - to set it with 'julia Config.jl --spicelib /path/to/spicelib'")
+    println(" ------------------------------------------------------------------")
   end
-  previousDir = pwd()
-  cd(joinpath(tmpdir, "lib"))
-  run(`rm $objectFiles`)
-  cd(previousDir)
 end
 
 function config_kernelfile(ARGS)
-  kernelFile = ARGS[2]
-  updateSettings("kernelFile:", kernelFile)
+  try
+    kernelFile = ARGS[2]
+    updateSettings("kernelFile:", kernelFile)
+  catch
+    println(" ------------------------------------------------------------------")
+    println(" - There was an error with setting up the kernelFile, try again later")
+    println(" - to set it with 'julia Config.jl --spicelib /path/to/metafile.tm'")
+    println(" ------------------------------------------------------------------")
+  end
+
 end
 
 function config_clib(ARGS)
@@ -236,18 +269,34 @@ function config_clib(ARGS)
 end
 
 function config_meshfile(ARGS)
-  meshFile = ARGS[2]
-  tmpdir = get_tmp_dir()
-  cp(meshFile, joinpath(tmpdir, "input/"*basename(meshFile)), remove_destination=true)
-  updateSettings("meshFile:", joinpath(tmpdir, "input/"*basename(meshFile)))
+  try
+    meshFile = ARGS[2]
+    tmpdir = get_tmp_dir()
+    cp(meshFile, joinpath(tmpdir, "input/"*basename(meshFile)), remove_destination=true)
+    updateSettings("meshFile:", joinpath(tmpdir, "input/"*basename(meshFile)))
+  catch
+    println(" ------------------------------------------------------------------")
+    println(" - There was an error with setting up the meshfile, try again later")
+    println(" - to set it with 'julia Config.jl --meshfile /path/to/meshfile.ply'")
+    println(" ------------------------------------------------------------------")
+  end
+
+
 end
 
 function config_meshfileshadow(ARGS)
-  meshFile = ARGS[2]
-  tmpdir = get_tmp_dir()
-  cp(meshFile, joinpath(tmpdir, "input/"*basename(meshFile)), remove_destination=true)
-  cp(meshFile, joinpath(tmpdir, "input/"*basename(meshFile)), remove_destination=true)
-  updateSettings("meshFileShadow:", joinpath(tmpdir, "input/"*basename(meshFile)))
+  try
+    meshFile = ARGS[2]
+    tmpdir = get_tmp_dir()
+    cp(meshFile, joinpath(tmpdir, "input/"*basename(meshFile)), remove_destination=true)
+    cp(meshFile, joinpath(tmpdir, "input/"*basename(meshFile)), remove_destination=true)
+    updateSettings("meshFileShadow:", joinpath(tmpdir, "input/"*basename(meshFile)))
+  catch
+    println(" ------------------------------------------------------------------")
+    println(" - There was an error with setting up the meshfileshadow, try again later")
+    println(" - to set it with 'julia Config.jl --meshfileshadow /path/to/meshfile.ply'")
+    println(" ------------------------------------------------------------------")
+  end
 end
 
 function config_docheckshadow(ARGS)
@@ -362,22 +411,27 @@ elseif lowercase(ARGS[1]) == "--auto"
   print("--tmpdir ")
   arg = parseCmdLineArg()
   config_tmpdir(["", arg])
+  println("OK")
 
   print("--spicelib ")
   arg = parseCmdLineArg()
   config_spicelib(["", arg])
+  println("OK")
 
   print("--kernelfile ")
   arg = parseCmdLineArg()
   config_kernelfile(["", arg])
+  println("OK")
 
   print("--meshfile ")
   arg = parseCmdLineArg()
   config_meshfile(["", arg])
+  println("OK")
 
   print("--datafile ")
   arg = parseCmdLineArg()
   config_data_file(["", arg])
+  println("OK")
 
   println()
   println(" - Mandatory settings done, continue with optional settings? ")
@@ -392,6 +446,7 @@ elseif lowercase(ARGS[1]) == "--auto"
       println(" - ...skipped")
     else
       config_clib(["", arg])
+      println("OK")
     end
 
     print("--meshFileShadow ")
@@ -400,6 +455,7 @@ elseif lowercase(ARGS[1]) == "--auto"
       println(" - ...skipped")
     else
       config_meshfileshadow(["", arg])
+      println("OK")
     end
 
     print("--doCheckShadow ")
@@ -408,6 +464,7 @@ elseif lowercase(ARGS[1]) == "--auto"
       println(" - ...skipped")
     else
       config_docheckshadow(["", arg])
+      println("OK")
     end
   end
 
