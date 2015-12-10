@@ -20,9 +20,8 @@ Julia
      to the LOAD_PATH. (The list of places where Julia looks for modules
      to load)
 
-  3. 
-  
-     a)
+  3. a)
+
      **OSX users**: create the following symlink in order
      to be able to launch julia properly from the command line
      
@@ -129,30 +128,38 @@ RUNNING
 =======
 
 you have to run the main.jl script from within the src directory.
+```
+julia main.jl date instrument
+```
 
-julia main.jl 'date' 'instrument'
-
-Where 'date' is the UTC datetime of the observation to be calculated in the
+Where `date` is the UTC datetime of the observation to be calculated in the
 following format
 
 2015-02-25T06:25:31
 
-and <<instrument>> is one of the following choices:
+and `instrument` is one of the following choices:
 
 ALICE
+
 MIRO
+
 OSIRIS_NAC
+
 OSIRIS_WAC
+
 VIRTIS_H
+
 VIRTIS_M
+
 DEBUG
+
 TEST
 
 
 so a full command will look like:
-
+```
 julia main.jl 2014-12-24T00:00:00 ALICE
-
+```
 --------------------------------------------------------------------------------
 
 
