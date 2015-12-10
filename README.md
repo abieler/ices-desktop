@@ -191,7 +191,8 @@ with some examples:
 
 julia Config.jl --tmpdir /home/abieler/tmp
 julia Config.jl --spicelib /home/abieler/ices-desktop/cspice/lib
-julia Config.jl --dataFile /home/abieler/ices-desktop/additionalData/whateverFile.dat
+julia Config.jl --kernelfile /home/abieler/ices-desktop/spiceKernels/metafiles/operationalKernels.tm
+julia Config.jl --dataFile /home/abieler/ices-desktop/additionalData/SHAP5-2.2-20150304T1200.CO2.dat
 julia Config.jl --doCheckShadow yes
 ```
 the following options are available ( * ) are mandatory setups)
