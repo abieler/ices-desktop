@@ -3,10 +3,14 @@ INSTALLATION
 
 Julia:
 ------
-  1) install julia version >= 0.4
+
+
+
+  1. install julia version >= 0.4
+  
      http://julialang.org/downloads/
 
-  2) if it does not exist, create the file .juliarc.jl in your home
+  2. if it does not exist, create the file .juliarc.jl in your home
      directory (where you also have .bashrc etc)
      add the following line to the .juliarc.jl file:
 
@@ -16,7 +20,7 @@ Julia:
      to the LOAD_PATH. (The list of places where Julia looks for modules
      to load)
 
-  3) a)
+  3. a)
      OSX users: create the following symlink in order
      to be able to launch julia properly from the command line
 
@@ -46,15 +50,15 @@ Julia:
 
 Spice:
 -----
-  1) download and unzip the cspice library. (tested for version N0065) from
+  1. download and unzip the cspice library. (tested for version N0065) from
       https://naif.jpl.nasa.gov/naif/toolkit_C.html
-  2) done
+  2. done
 
 
 Git:
 ----
-  1) Install git
-  2) Set up git with some info if you are a first time user:
+  1. Install git
+  2. Set up git with some info if you are a first time user:
      a) git config --global user.name "John Doe"
      b) git config --global user.email johndoe@example.com
 
