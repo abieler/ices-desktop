@@ -81,7 +81,7 @@ Before you can run the line of sight integration tool you need to go through
 a couple of configuration steps. All configurations can be done through the
 Config.jl script which is found at:
 
-AMPS/utility/LOS/Config.jl
+ices-desktop/Config.jl
 
 Start a setup procedure by typing:
 
