@@ -94,11 +94,13 @@ Spice
   1. Download and unzip the cspice library (the file **cspice.tar.Z**) from
       https://naif.jpl.nasa.gov/naif/toolkit_C.html
   2. Move the extracted folder "cspice" into the ices-desktop folder, parallel to "src".
-  3. Get necessary spice kernel files from andre (they are not public) or if you know your way around spice, get your own spice      kernels.
 
 Additional Data
 ---------------
-  Request additional data from andre. This includes the mesh files of the CG shape model and the DSMC data files.
+  Request additional data from andre. This includes the mesh files of the CG shape model,
+  the DSMC data files and the spice kernel files.
+  You will get a link to download a zip file. Put this zip file into ices-desktop and
+  extract it there.
 
 --------------------------------------------------------------------------------
 
