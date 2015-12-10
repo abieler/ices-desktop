@@ -20,7 +20,9 @@ Julia
      to the LOAD_PATH. (The list of places where Julia looks for modules
      to load)
 
-  3. a)
+  3. 
+  
+     a)
      **OSX users**: create the following symlink in order
      to be able to launch julia properly from the command line
      
