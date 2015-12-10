@@ -189,7 +189,8 @@ julia Config.jl --option
 ```
 the following options are available ( * ) are mandatory setups)
 
---tmpdir path-to-temporary-directory ( * )
+**--tmpdir** path-to-temporary-directory ( * )
+
   This directory is used to store files necessary for the LOS tool. It can be
   picked freely. In this directory the Config.jl file will create two subdirs
   'lib' and 'input'
@@ -201,7 +202,8 @@ the following options are available ( * ) are mandatory setups)
   will be updated on later steps by the Config.jl file.
 
 
---spicelib path-to-cspice/lib/ ( * )
+**--spicelib** path-to-cspice/lib/ ( * )
+
   Full path to the spice directory which contains the files
   cspice.a and csupport.a.
   
@@ -211,24 +213,29 @@ the following options are available ( * ) are mandatory setups)
   shared library (spice.so on linux, spice.dylib on OSX)
   
 
---kernelfile full-path-to-spice-metafile ( * )
+**--kernelfile full-path-to-spice-metafile ( * )
+
   Full path and file name to a spice metafile that contains the list
   of spice kernels to be loaded
   --> the spice routine will call furnsh(metafile) on this file.
   
---datafile full-path-to-DSMC-output-file ( * )
+  
+**--datafile full-path-to-DSMC-output-file ( * )
+
   specify the full path to the DSMC data file you want to be used for the LOS calculation.
   A copy of this file will then be placed into the "tmpdir" specified above. If the AMPS
   file is not in the .h5 format, you will be asked if you want to convert it into .h5
   --> this conversion is necessary, but it will overwrite previous .h5 files.
   
---meshfile full path to shape model .ply file
+  
+**--meshfile full path to shape model .ply file
   A copy of the shape model .ply file will be put into the tmpdir.
 
 
---clib full path to custom c function definition
-  custom user file containing a function definition according to:
+**--clib** full path to custom c function definition
 
+  custom user file containing a function definition according to:
+```
   void
   ColumnIntegrationFactor (double minSize,
                            double maxSize,
@@ -242,13 +249,18 @@ the following options are available ( * ) are mandatory setups)
   // result  = provide a custom factor to be multiplied with the column density.
   // e.g. used for brightness calculation of dust grains
   }
+  ```
 
---docheckshadow   yes or no if shadow calculation is needed. 
+
+**--docheckshadow**   yes or no if shadow calculation is needed.
+
   If yes, the line of sight calculation will skip values along
   the LOS which are in the shadow. If no, the full LOS will be computed.
 
 
---meshfileshadow  .ply file of the body surface mesh for shadow calculation. You can provide a coarser
+**--meshfileshadow**
+  
+  .ply file of the body surface mesh for shadow calculation. You can provide a coarser
   resolution of the actual shape model mesh for the shadow calculation. This will decrease the CPU time
   for the LOS calculations.
   
