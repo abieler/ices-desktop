@@ -2,6 +2,7 @@ INSTALLATION
 ============
 
 Julia:
+------
   1) install julia version >= 0.4
      http://julialang.org/downloads/
 
@@ -44,12 +45,14 @@ Julia:
 
 
 Spice:
+-----
   1) download and unzip the cspice library. (tested for version N0065) from
       https://naif.jpl.nasa.gov/naif/toolkit_C.html
   2) done
 
 
 Git:
+----
   1) Install git
   2) Set up git with some info if you are a first time user:
      a) git config --global user.name "John Doe"
@@ -68,19 +71,72 @@ Config.jl script which is found at:
 
 AMPS/utility/LOS/Config.jl
 
-the general use is to call
+Start a setup procedure by typing:
+
+julia Config.jl --auto
+
+This will run you through all the mandatory settings and the most useful
+optional settings. Those user settings control e.g. where the computed results
+are stored, which data file is to be loaded, what shape file is used etc.
+Those settings are stored in ices-desktop/.userSettings.conf
+
+After this script is finished you are good to go.
+--------------------------------------------------------------------------------
+
+RUNNING
+=======
+
+you have to run the main.jl script from within the src directory.
+
+julia main.jl <date> <instrument>
+
+Where <date> is the UTC datetime of the observation to be calculated in the
+following format
+
+2015-02-25T06:25:31
+
+and <instrument> is one of the following choices:
+
+ALICE
+MIRO
+OSIRIS_NAC
+OSIRIS_WAC
+VIRTIS_H
+VIRTIS_M
+DEBUG
+TEST
+
+
+so a full command will look like:
+
+julia main.jl 2014-12-24T00:00:00 ALICE
+
+--------------------------------------------------------------------------------
+
+
+
+Some further notes on the .userSettings.conf file:
+..................................................
+
+The basic structure of the .userSettings.conf file is just a stack of
+"keyWord:parameter"
+pairs.
+
+During runtime this ascii file is parsed for those keywords.
+(Actually for "keyWord:")
+
+The order of the keyword stack is not important.
+
+You can add your own text for commenting and such, just be sure to not use any
+of the keywords in that text.
+
+If you have one keyWord doubly defined, the first one will be parsed and the
+second one ignored.
+
+You can edit this file with any text editor or via the Config.jl file.
+The general use is to call
 
 julia Config.jl --option
-
-The settings of the configuration process are saved to
-AMPS/utility/LOS/.userSettings.conf
-
-Running:
-julia Config.jl --auto
-will take you through the necessary configuration steps one by one.
-The other options below can also be used after or before the --auto run in
-order to overwrite/change settings done in --auto.
-
 
 the following options are available ( * ) are mandatory setups)
 
@@ -139,18 +195,3 @@ the following options are available ( * ) are mandatory setups)
 --datafile        .full path to h5 AMPS output file")
 --clean           remove 'lib' and 'input' dirs in tmpfile")
 --help            show this message"
-
-
-RUN
-===
-Before you can use the LOS tool you need to modify the AMPS data with the
-prepareAmpsData.jl script. This will create a new HDF5 (.h5) file with only
-a subset of data from the original file.
-
-
-7) Prepare AMPS data by executing:
-
-julia prepareAmpsData.jl FileName
-
-this will create a .h5 file which is later used
-to load the data
