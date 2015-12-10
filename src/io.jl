@@ -1,6 +1,28 @@
 using Triangles
 using DataFrames
 
+function save_result(ccd, mask, nVars, nPixelsX, nPixelsY)
+    prevDir = pwd()
+    cd(filePath)
+    cd("../output")
+    ccd = reshape(ccd, nVars, nPixelsX, nPixelsY)
+    ccd_sum = zeros(nPixelsX, nPixelsY)
+    if doBlankBody
+      mask = reshape(mask, nPixelsX, nPixelsY)
+      border_mask = get_border(mask)
+      custom_mask!(mask)
+    end
+    for i=1:nVars
+      ccdPlt = reshape(ccd[i,:,:], nPixelsX, nPixelsY)
+      for ix = 1:nPixelsX
+        for iy = 1:nPixelsY
+           ccd_sum[ix, iy] += ccdPlt[ix, iy]
+         end
+       end
+      writedlm("ccd_" * varNames[i] * ".dat", ccdPlt)
+    end
+    cd(prevDir)
+end
 function plot_result(ccd, mask, nVars, nPixesX, nPixelsY)
     # reshape ccd from a 1D array to nVar times 2D arrays.
     ccd = reshape(ccd, nVars, nPixelsX, nPixelsY)
@@ -61,7 +83,7 @@ function plot_result(ccd, mask, nVars, nPixesX, nPixelsY)
          end
        end
 
-      writedlm(joinpath(filePath, "ccd_" * varNames[i] * ".dat"), ccdPlt)
+      #writedlm(joinpath(filePath, "ccd_" * varNames[i] * ".dat"), ccdPlt)
     end
     figure()
     contourf(log10(ccd_sum), nLevels, cmap=cmap)

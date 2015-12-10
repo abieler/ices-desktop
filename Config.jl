@@ -178,6 +178,7 @@ function config_tmpdir(ARGS)
           end
           mkdir(joinpath(rundir, "lib"))
           mkdir(joinpath(rundir, "input"))
+          mkdir(joinpath(rundir, "output"))
         end
       else
         println(" - create new directories 'lib' and 'input'")

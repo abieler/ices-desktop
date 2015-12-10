@@ -1,5 +1,9 @@
 using HDF5, JLD
-using PyPlot
+try
+  using PyPlot
+catch
+  println(" -  PyPlot not imported. skipping plotting of results")
+end
 using Spice
 using Instrument
 
@@ -98,5 +102,12 @@ assign_triangles!(oct, allTriangles)
 @time ccd, mask = doIntegration(oct, rPointing, rStart, nVars, allTriangles,
                           doCheckShadow_bool)
 
-plot_result(ccd, mask, nVars, nPixelsX, nPixelsY)
-writedlm(joinpath(filePath, "ccd.dat"), ccd)
+save_result(ccd, mask, nVars, nPixelsX, nPixelsY)
+try
+  plot_result(ccd, mask, nVars, nPixelsX, nPixelsY)
+catch
+end
+cd(filePath)
+cd("../output")
+writedlm("ccd.dat", ccd)
+#writedlm(joinpath(filePath, "ccd.dat"), ccd)
