@@ -130,14 +130,14 @@ RUNNING
 
 you have to run the main.jl script from within the src directory.
 
-julia main.jl <date> <instrument>
+julia main.jl <<date>> <<instrument>>
 
 Where <date> is the UTC datetime of the observation to be calculated in the
 following format
 
 2015-02-25T06:25:31
 
-and <instrument> is one of the following choices:
+and <<instrument>> is one of the following choices:
 
 ALICE
 MIRO
