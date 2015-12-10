@@ -228,7 +228,7 @@ the following options are available ( * ) are mandatory setups)
   
   
 
-**--kernelfile full-path-to-spice-metafile ( * )
+**--kernelfile** full-path-to-spice-metafile ( * )
 
   Full path and file name to a spice metafile that contains the list
   of spice kernels to be loaded
@@ -238,7 +238,7 @@ the following options are available ( * ) are mandatory setups)
   
   
   
-**--datafile full-path-to-DSMC-output-file ( * )
+**--datafile** full-path-to-DSMC-output-file ( * )
 
   specify the full path to the DSMC data file you want to be used for the LOS calculation.
   A copy of this file will then be placed into the "tmpdir" specified above. If the AMPS
