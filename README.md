@@ -1,7 +1,7 @@
 INSTALLATION
 ============
 
-Julia:
+Julia
 ------
 
   1. install julia version >= 0.4
@@ -53,7 +53,7 @@ Julia:
      You can exit the Julia REPL by typing exit(), quit() or CTRL+D
 
 
-Git:
+Git
 ----
   Git is not necessary to install, you can simply download the ices-desktop tool from this page.
   However, if you install git you will be able to update the tool to the newest version via git
@@ -66,21 +66,38 @@ Git:
    git config --global user.email johndoe@example.com
   ```
 
-Ices-Desktop:
+Ices-Desktop
 ------------
-  1. From whatever directory you want to install the ices-desktop tool type
+  You can either download the ices-desktop tool by clicking the "Download ZIP" button on this page, or
+  install it via git.
+  
+  If you choose the "Download ZIP" way, extract the archive on your hard drive and rename the
+  extracted directory to "ices-desktop". You can put this folder wherever you want in your file system.
+  
+  For installation by git; cd into the directory you want the tool to be installed and execute
+  the following command:
   
   ```
   git clone https://github.com/abieler/ices-desktop.git
   ```
+  
+  this downloads all necessary files from the web into a folder "ices-desktop". You can move this directory
+  around your file system wherever you want. For updates later on cd into the ices-desktop folder and execute:
+  
+  ```
+  git pull
+  ```
 
-
-
-Spice:
+Spice
 -----
-  1. download and unzip the cspice library. (tested for version N0065) from
+  1. Download and unzip the cspice library (the file **cspice.tar.Z**) from
       https://naif.jpl.nasa.gov/naif/toolkit_C.html
-  2. done
+  2. Move the extracted folder "cspice" into the ices-desktop folder, parallel to "src".
+  3. Get necessary spice kernel files from andre (they are not public) or if you know your way around spice, get your own spice      kernels.
+
+Additional Data
+---------------
+  Request additional data from andre. This includes the mesh files of the CG shape model and the DSMC data files.
 
 --------------------------------------------------------------------------------
 
@@ -100,6 +117,8 @@ This will run you through all the mandatory settings and the most useful
 optional settings. Those user settings control e.g. where the computed results
 are stored, which data file is to be loaded, what shape file is used etc.
 Those settings are stored in ices-desktop/.userSettings.conf
+**Please read the additional information about the configuration settings
+at the bottom of this document.**
 
 After this script is finished you are good to go.
 --------------------------------------------------------------------------------
@@ -139,7 +158,7 @@ julia main.jl 2014-12-24T00:00:00 ALICE
 Some further notes on the .userSettings.conf file:
 ..................................................
 
-The basic structure of the .userSettings.conf file is just a stack of
+The .userSettings.conf file is just a stack of
 "keyWord:parameter"
 pairs.
 
@@ -155,10 +174,10 @@ If you have one keyWord doubly defined, the first one will be parsed and the
 second one ignored.
 
 You can edit this file with any text editor or via the Config.jl file.
-The general use is to call
-
+The general use is to call:
+```
 julia Config.jl --option
-
+```
 the following options are available ( * ) are mandatory setups)
 
 --tmpdir <path to temporary directory> ( * )
@@ -176,14 +195,26 @@ the following options are available ( * ) are mandatory setups)
 --spicelib <path to cspice/lib/> ( * )
   Full path to the spice directory which contains the files
   cspice.a and csupport.a.
+  
+  (your/path/to/ices-desktop/cspice/lib if you followed the installation instructions)
+  
   Those files will then be copied into the 'lib' folder and compiled into a
   shared library (spice.so on linux, spice.dylib on OSX)
+  
 
-
---kernelfile <full path to spice metafile>
-  Full path and file name to a spice metafile that contains the full list
-  of spice kernels to be loaded for the calculations
+--kernelfile <full path to spice metafile> ( * )
+  Full path and file name to a spice metafile that contains the list
+  of spice kernels to be loaded
   --> the spice routine will call furnsh(metafile) on this file.
+  
+--datafile <full path to DSMC output file> ( * )
+  specify the full path to the DSMC data file you want to be used for the LOS calculation.
+  A copy of this file will then be placed into the "tmpdir" specified above. If the AMPS
+  file is not in the .h5 format, you will be asked if you want to convert it into .h5
+  --> this conversion is necessary, but it will overwrite previous .h5 files.
+  
+--meshfile <full path to shape model .ply file>
+  A copy of the shape model .ply file will be put into the tmpdir.
 
 
 --clib <full path to custom c function definition>
@@ -203,16 +234,16 @@ the following options are available ( * ) are mandatory setups)
   // e.g. used for brightness calculation of dust grains
   }
 
-
---noclib
-  do not use any shared c library
-  If you never defined --clib this is unnecessary. It is only used to remove
-  a c library that has been used in previous runs.
+--docheckshadow   yes or no if shadow calculation is needed. 
+  If yes, the line of sight calculation will skip values along
+  the LOS which are in the shadow. If no, the full LOS will be computed.
 
 
---meshfile        .ply file of the body surface mesh")
---meshfileshadow  .ply file of the body surface mesh for shadow calc.")
---docheckshadow   yes or no if shadow calculation is needed")
---datafile        .full path to h5 AMPS output file")
+--meshfileshadow  .ply file of the body surface mesh for shadow calculation. You can provide a coarser
+  resolution of the actual shape model mesh for the shadow calculation. This will decrease the CPU time
+  for the LOS calculations.
+  
+
+
 --clean           remove 'lib' and 'input' dirs in tmpfile")
 --help            show this message"
