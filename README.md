@@ -111,9 +111,9 @@ Config.jl script which is found at:
 ices-desktop/Config.jl
 
 Start a setup procedure by typing:
-
+```
 julia Config.jl --auto
-
+```
 This will run you through all the mandatory settings and the most useful
 optional settings. Those user settings control e.g. where the computed results
 are stored, which data file is to be loaded, what shape file is used etc.
@@ -189,7 +189,7 @@ julia Config.jl --option
 ```
 the following options are available ( * ) are mandatory setups)
 
---tmpdir <path to temporary directory> ( * )
+--tmpdir path-to-temporary-directory ( * )
   This directory is used to store files necessary for the LOS tool. It can be
   picked freely. In this directory the Config.jl file will create two subdirs
   'lib' and 'input'
@@ -201,7 +201,7 @@ the following options are available ( * ) are mandatory setups)
   will be updated on later steps by the Config.jl file.
 
 
---spicelib <path to cspice/lib/> ( * )
+--spicelib path-to-cspice/lib/ ( * )
   Full path to the spice directory which contains the files
   cspice.a and csupport.a.
   
@@ -211,22 +211,22 @@ the following options are available ( * ) are mandatory setups)
   shared library (spice.so on linux, spice.dylib on OSX)
   
 
---kernelfile <full path to spice metafile> ( * )
+--kernelfile full-path-to-spice-metafile ( * )
   Full path and file name to a spice metafile that contains the list
   of spice kernels to be loaded
   --> the spice routine will call furnsh(metafile) on this file.
   
---datafile <full path to DSMC output file> ( * )
+--datafile full-path-to-DSMC-output-file ( * )
   specify the full path to the DSMC data file you want to be used for the LOS calculation.
   A copy of this file will then be placed into the "tmpdir" specified above. If the AMPS
   file is not in the .h5 format, you will be asked if you want to convert it into .h5
   --> this conversion is necessary, but it will overwrite previous .h5 files.
   
---meshfile <full path to shape model .ply file>
+--meshfile full path to shape model .ply file
   A copy of the shape model .ply file will be put into the tmpdir.
 
 
---clib <full path to custom c function definition>
+--clib full path to custom c function definition
   custom user file containing a function definition according to:
 
   void
@@ -252,7 +252,6 @@ the following options are available ( * ) are mandatory setups)
   resolution of the actual shape model mesh for the shadow calculation. This will decrease the CPU time
   for the LOS calculations.
   
-
 
 --clean           remove 'lib' and 'input' dirs in tmpfile")
 --help            show this message"
