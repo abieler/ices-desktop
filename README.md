@@ -4,8 +4,6 @@ INSTALLATION
 Julia:
 ------
 
-
-
   1. install julia version >= 0.4
   
      http://julialang.org/downloads/
@@ -14,7 +12,9 @@ Julia:
      directory (where you also have .bashrc etc)
      add the following line to the .juliarc.jl file:
 
-     ```push!(LOAD_PATH, pwd())```
+     ```
+     push!(LOAD_PATH, pwd())
+     ```
 
      This includes the current directory in which julia is run
      to the LOAD_PATH. (The list of places where Julia looks for modules
@@ -24,7 +24,9 @@ Julia:
      **OSX users**: create the following symlink in order
      to be able to launch julia properly from the command line
      
-    ```sudo ln -s /Applications/Julia-x.x.x.app/Contents/Resources/julia/bin/julia /usr/bin/julia```
+    ```
+    sudo ln -s /Applications/Julia-x.x.x.app/Contents/Resources/julia/bin/julia /usr/bin/julia
+    ```
 
      where x.x.x is your version of the Julia install.
 
@@ -47,20 +49,17 @@ Julia:
      Pkg.add("PyPlot")
      Pkg.update()
      ```
-
-
-Spice:
------
-  1. download and unzip the cspice library. (tested for version N0065) from
-      https://naif.jpl.nasa.gov/naif/toolkit_C.html
-  2. done
+     
+     You can exit the Julia REPL by typing exit(), quit() or CTRL+D
 
 
 Git:
 ----
-  1. Install git
-  2. Set up git with some info if you are a first time user:
-  
+  Git is not necessary to install, you can simply download the ices-desktop tool from this page.
+  However, if you install git you will be able to update the tool to the newest version via git
+  through the command line using `git pull`, which downloads the latest version of the tool. If you
+  install git and are a first time user, provide the following information by command line:
+
   ```
    git config --global user.name "John Doe"
    
@@ -71,7 +70,17 @@ Ices-Desktop:
 ------------
   1. From whatever directory you want to install the ices-desktop tool type
   
-  `git clone https://github.com/abieler/ices-desktop.git`
+  ```
+  git clone https://github.com/abieler/ices-desktop.git
+  ```
+
+
+
+Spice:
+-----
+  1. download and unzip the cspice library. (tested for version N0065) from
+      https://naif.jpl.nasa.gov/naif/toolkit_C.html
+  2. done
 
 --------------------------------------------------------------------------------
 
