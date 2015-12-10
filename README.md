@@ -14,21 +14,21 @@ Julia:
      directory (where you also have .bashrc etc)
      add the following line to the .juliarc.jl file:
 
-     push!(LOAD_PATH, pwd())
+     ```push!(LOAD_PATH, pwd())```
 
      This includes the current directory in which julia is run
      to the LOAD_PATH. (The list of places where Julia looks for modules
      to load)
 
   3. a)
-     OSX users: create the following symlink in order
+     **OSX users**: create the following symlink in order
      to be able to launch julia properly from the command line
-
-     sudo ln -s /Applications/Julia-x.x.x.app/Contents/Resources/julia/bin/julia /usr/bin/julia
+     
+    ```sudo ln -s /Applications/Julia-x.x.x.app/Contents/Resources/julia/bin/julia /usr/bin/julia```
 
      where x.x.x is your version of the Julia install.
 
-     Linux users: You are much cooler than OSX users. No such step necessary
+     **Linux users**: You are much cooler than OSX users. No such step necessary
      for you.
 
      b)
