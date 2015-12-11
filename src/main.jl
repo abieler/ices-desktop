@@ -1,9 +1,5 @@
 using HDF5, JLD
-try
-  using PyPlot
-catch
-  println(" -  PyPlot not imported. skipping plotting of results")
-end
+using PyPlot
 using Spice
 using Instrument
 

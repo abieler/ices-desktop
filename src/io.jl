@@ -82,8 +82,6 @@ function plot_result(ccd, mask, nVars, nPixesX, nPixelsY)
            ccd_sum[ix, iy] += ccdPlt[ix, iy]
          end
        end
-
-      #writedlm(joinpath(filePath, "ccd_" * varNames[i] * ".dat"), ccdPlt)
     end
     figure()
     contourf(log10(ccd_sum), nLevels, cmap=cmap)
