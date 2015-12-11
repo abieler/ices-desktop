@@ -409,18 +409,40 @@ elseif lowercase(ARGS[1]) == "--auto"
     println("--docheckshadow   yes or no if shadow calculation is needed")
     println("")
     println("")
-  print("--tmpdir ")
+    currentDir = pwd()
+    defaultDir = joinpath(currentDir, "tmp")
+    println(" - type in directory to store input and output of computations:")
+    print("--tmpdir ", defaultDir)
+
   arg = parseCmdLineArg()
+  if length(arg) < 1
+    arg = defaultDir
+  end
   config_tmpdir(["", arg])
   println("OK")
 
-  print("--spicelib ")
+  defaultDir = joinpath(pwd(), "cspice/lib/")
+  println("defaultDirSpice: ", defaultDir)
+  if !isdir(defaultDir)
+    defaultDir = ""
+  end
+  print("--spicelib ", defaultDir)
   arg = parseCmdLineArg()
+  if length(arg) < 1
+    arg = defaultDir
+  end
   config_spicelib(["", arg])
   println("OK")
 
-  print("--kernelfile ")
+  defaultFile = joinpath(pwd(), "spiceKernels/metafiles/operationalKernels.tm")
+  if !isfile(defaultFile)
+    defaultFile = ""
+  end
+  print("--kernelfile ", defaultFile)
   arg = parseCmdLineArg()
+  if length(arg) < 1
+    arg = defaultDir
+  end
   config_kernelfile(["", arg])
   println("OK")
 
