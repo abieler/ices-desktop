@@ -9,14 +9,14 @@ Julia
      http://julialang.org/downloads/
 
   2. if it does not exist, create the file `.juliarc.jl` in your home
-     directory (where you also have .bashrc etc)
+     directory (where you also have .bashrc etc). Then 
      add the following line to the .juliarc.jl file:
 
      ```
      push!(LOAD_PATH, pwd())
      ```
 
-     This includes the current directory in which julia is run
+     This includes the current directory in which julia is running
      to the LOAD_PATH. (The list of places where Julia looks for modules
      to load)
 
