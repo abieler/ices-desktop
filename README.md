@@ -309,3 +309,25 @@ remove 'lib' and 'input' dirs in tmpfile"
 **--help**            
 
 show this message"
+
+DEBUG
+-----
+Julia Blosc.jl installation sometimes does not work on first try. 2 sources of errors have been identified so far:
+
+```
+sudo apt-get install libc6-dev
+```
+
+or putting
+
+```
+cacert=/etc/ssl/certs/ca-certificates.crt
+```
+
+into 
+
+```
+~/.curlrc fixed the problem!
+```
+
+has helped.
