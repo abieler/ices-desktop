@@ -4,23 +4,13 @@ INSTALLATION
 Julia
 ------
 
-  1. install julia version >= 0.4
+  1. install julia version >= 0.4 via you OS package manager or else you can find binaries at the link below:
   
      http://julialang.org/downloads/
 
-  2. if it does not exist, create the file `.juliarc.jl` in your home
-     directory (where you also have .bashrc etc). Then 
-     add the following line to the .juliarc.jl file:
 
-     ```
-     push!(LOAD_PATH, pwd())
-     ```
 
-     This includes the current directory in which julia is running
-     to the LOAD_PATH. (The list of places where Julia looks for modules
-     to load)
-
-  3. a)
+  2. a)
 
      **OSX users**: create the following symlink in order
      to be able to launch julia properly from the command line
@@ -30,9 +20,13 @@ Julia
     ```
 
      where x.x.x is your version of the Julia install.
+     
+     For "El Capitan" users that does not work anymore as not even root is allowed to write to /usr/bin/. In that case
 
-     **Linux users**: You are much cooler than OSX users. No such step necessary
-     for you.
+     **Linux users**: If you installed via package manager or similar, no further steps are required.
+     Otherwise modify your PATH variable accordingly.
+     
+     **Windows users**: Modify your environment variable "PATH" to include the directory where Julia.exe is located. 
 
      b)
      open a new terminal or source your current session, then
@@ -52,6 +46,20 @@ Julia
      ```
      
      You can exit the Julia REPL by typing exit(), quit() or CTRL+D
+     
+    
+
+  3. if it does not exist, create the file `.juliarc.jl` in your home
+     directory. You can look up the home directory by typing `homedir()` in the Julia REPL.
+     Then add the following line to the .juliarc.jl file:
+
+     ```
+     push!(LOAD_PATH, pwd())
+     ```
+
+     This includes the current directory in which julia is running
+     to the LOAD_PATH. (The list of places where Julia looks for modules
+     to load)
 
 
 Git
