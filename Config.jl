@@ -1,3 +1,41 @@
+using Requests
+import Requests: get
+
+function get_spice(path)
+root_url = "http://naif.jpl.nasa.gov/pub/naif/toolkit/C/"
+
+@linux_only platform_url = "PC_Linux_GCC_64bit/"
+@osx_only platform_url = "MacIntel_OSX_AppleC_64bit/"
+@windows_only println("Windows not supported")
+
+pkg_name = "packages/cspice.tar.Z"
+
+full_url = root_url * platform_url * pkg_name
+
+println(" - Downloading SPICE library... this might take a moment.")
+cspice_archive = get(full_url)
+println(" - Saving SPICE library to disk: "), joinpath(path, "cspice.tar.Z")
+save(cspice_archive, joinpath(path, "cspice.tar.Z"))
+println(" - OK")
+end
+
+function get_spice_kernels()
+  print(" - Downloading SPICE kernels... this might take a moment.")
+  url = "https://www.dropbox.com/s/7qr8e1kmeij2e71/spiceKernels.zip?dl=1"
+  kernels = get(url)
+  save(kernels, "spiceKernels.zip")
+  println("  OK")
+end
+
+function get_additional_data()
+  print(" - Downloading additional data... this might take a moment.")
+  url = "https://www.dropbox.com/s/rp23i57dgwjpkob/additionalData.zip?dl=1"
+  data = get(url)
+  save(data, "additionalData.zip")
+  println("  OK")
+end
+
+
 function get_object_files(path)
 
   objectFiles = AbstractString[]
@@ -10,9 +48,9 @@ function get_object_files(path)
 
 end
 
-function compileLinux(tmpdir)
+function compileLinux(datadir)
   previousDir = pwd()
-  cd(joinpath(tmpdir, "lib"))
+  cd(joinpath(datadir, "lib"))
   run(`ar -x cspice.a`)
   run(`ar -x csupport.a`)
   objectFiles = get_object_files(".")
@@ -35,9 +73,9 @@ function compileClibLinux(fileName)
   cd(previousDir)
 end
 
-function compileOSX(tmpdir)
+function compileOSX(datadir)
   previousDir = pwd()
-  cd(joinpath(tmpdir, "lib"))
+  cd(joinpath(datadir, "lib"))
   run(`ar -x cspice.a`)
   run(`ar -x csupport.a`)
   objectFiles = get_object_files(".")
@@ -97,8 +135,8 @@ function updateSettings(keyword, newValue)
   rm(".userSettings.bkp")
 end
 
-function get_tmp_dir()
-  keyword = "tmpDir:"
+function get_data_dir()
+  keyword = "dataDir:"
   iFile = open(".userSettings.conf", "r")
   while !eof(iFile)
     line = readline(iFile)
@@ -108,8 +146,8 @@ function get_tmp_dir()
       return value
     end
   end
-  println(" - tmpDir not found in .userSettings.conf.")
-  println(" - run julia Config.jl --tmpdir <path to tmpdir>")
+  println(" - dataDir not found in .userSettings.conf.")
+  println(" - run julia Config.jl --datadir <path to datadir>")
   close(iFile)
   exit()
 end
@@ -118,10 +156,10 @@ function config_data_file(ARGS, case="dataFile:")
   try
     dataFile = ARGS[2]
     @show(dataFile)
-    tmpdir = get_tmp_dir()
+    datadir = get_data_dir()
     if contains(dataFile, ".h5")
-      cp(dataFile, joinpath(tmpdir, "input/"*basename(dataFile)), remove_destination=true)
-      updateSettings("dataFile:", joinpath(tmpdir, "input/"*basename(dataFile)))
+      cp(dataFile, joinpath(datadir, "input/"*basename(dataFile)), remove_destination=true)
+      updateSettings("dataFile:", joinpath(datadir, "input/"*basename(dataFile)))
     else
       print(" - selected data file is not in HDF5 format. Build new .h5 file? (y/n) ")
       answ = parseCmdLineArg()
@@ -140,8 +178,8 @@ function config_data_file(ARGS, case="dataFile:")
         newBase = baseName[1:end-(length(ext)+1)] * ".h5"
         newDataFile = joinpath(path, newBase)
 
-        mv(newDataFile, joinpath(tmpdir, "input/"*newBase), remove_destination=true)
-        updateSettings(case, joinpath(tmpdir, "input/"*newBase))
+        mv(newDataFile, joinpath(datadir, "input/"*newBase), remove_destination=true)
+        updateSettings(case, joinpath(datadir, "input/"*newBase))
       end
     end
   catch
@@ -153,7 +191,7 @@ function config_data_file(ARGS, case="dataFile:")
 
 end
 
-function config_tmpdir(ARGS)
+function config_datadir(ARGS)
   try
     rundir = ""
     try
@@ -163,7 +201,7 @@ function config_tmpdir(ARGS)
     end
 
     if isdir(rundir)
-      println(" - tmpdir already exists")
+      println(" - datadir already exists")
       if (isdir(joinpath(rundir, "lib")) | isdir(joinpath(rundir, "input")))
         print(" - directory 'lib' or 'input' already exist, remove them? (y/n): ")
         answer = readline(STDIN)
@@ -191,11 +229,11 @@ function config_tmpdir(ARGS)
       mkdir(joinpath(rundir, "input"))
     end
     touch(".userSettings.conf")
-    updateSettings("tmpDir:", rundir)
+    updateSettings("dataDir:", rundir)
   catch
     println(" ------------------------------------------------------------------")
-    println(" - There was an error with setting up the tmpDir, try again later")
-    println(" - to set it with 'julia Config.jl --tmpDir /path/to/dir'")
+    println(" - There was an error with setting up the dataDir, try again later")
+    println(" - to set it with 'julia Config.jl --dataDir /path/to/dir'")
     println(" ------------------------------------------------------------------")
   end
 
@@ -204,24 +242,24 @@ end
 function config_spicelib(ARGS)
   try
     sharedLibPath = ARGS[2]
-    tmpdir = get_tmp_dir()
+    datadir = get_data_dir()
     cp(joinpath(sharedLibPath, "cspice.a"),
-       joinpath(tmpdir, "lib/cspice.a"),
+       joinpath(datadir, "lib/cspice.a"),
        remove_destination=true)
 
     cp(joinpath(sharedLibPath, "csupport.a"),
-       joinpath(tmpdir, "lib/csupport.a"),
+       joinpath(datadir, "lib/csupport.a"),
        remove_destination=true)
 
     if os == "linux"
-      objectFiles = compileLinux(tmpdir)
-      updateSettings("spicelib:", joinpath(tmpdir, "lib/spice.so"))
+      objectFiles = compileLinux(datadir)
+      updateSettings("spicelib:", joinpath(datadir, "lib/spice.so"))
     else
-      objectFiles = compileOSX(tmpdir)
-      updateSettings("spicelib:", joinpath(tmpdir, "lib/spice.dylib"))
+      objectFiles = compileOSX(datadir)
+      updateSettings("spicelib:", joinpath(datadir, "lib/spice.dylib"))
     end
     previousDir = pwd()
-    cd(joinpath(tmpdir, "lib"))
+    cd(joinpath(datadir, "lib"))
     run(`rm $objectFiles`)
     cd(previousDir)
   catch
@@ -247,7 +285,7 @@ end
 
 function config_clib(ARGS)
   clibFile = ARGS[2]
-  tmpdir = get_tmp_dir()
+  datadir = get_data_dir()
   if os == "linux"
     ext = ".so"
   else
@@ -255,13 +293,13 @@ function config_clib(ARGS)
   end
 
   try
-    cp(clibFile, joinpath(tmpdir, "lib/"*basename(clibFile)), remove_destination=true)
-    sharedLibName = joinpath(tmpdir, "lib/clib" * ext )
+    cp(clibFile, joinpath(datadir, "lib/"*basename(clibFile)), remove_destination=true)
+    sharedLibName = joinpath(datadir, "lib/clib" * ext )
     updateSettings("clibFile:", sharedLibName)
     if os == "linux"
-      compileClibLinux(joinpath(tmpdir, "lib/"*basename(clibFile)))
+      compileClibLinux(joinpath(datadir, "lib/"*basename(clibFile)))
     else
-      compileClibOSX(joinpath(tmpdir, "lib/"*basename(clibFile)))
+      compileClibOSX(joinpath(datadir, "lib/"*basename(clibFile)))
     end
   catch
     println("Did not find c library! ")
@@ -272,9 +310,9 @@ end
 function config_meshfile(ARGS)
   try
     meshFile = ARGS[2]
-    tmpdir = get_tmp_dir()
-    cp(meshFile, joinpath(tmpdir, "input/"*basename(meshFile)), remove_destination=true)
-    updateSettings("meshFile:", joinpath(tmpdir, "input/"*basename(meshFile)))
+    datadir = get_data_dir()
+    cp(meshFile, joinpath(datadir, "input/"*basename(meshFile)), remove_destination=true)
+    updateSettings("meshFile:", joinpath(datadir, "input/"*basename(meshFile)))
   catch
     println(" ------------------------------------------------------------------")
     println(" - There was an error with setting up the meshfile, try again later")
@@ -288,10 +326,10 @@ end
 function config_meshfileshadow(ARGS)
   try
     meshFile = ARGS[2]
-    tmpdir = get_tmp_dir()
-    cp(meshFile, joinpath(tmpdir, "input/"*basename(meshFile)), remove_destination=true)
-    cp(meshFile, joinpath(tmpdir, "input/"*basename(meshFile)), remove_destination=true)
-    updateSettings("meshFileShadow:", joinpath(tmpdir, "input/"*basename(meshFile)))
+    datadir = get_data_dir()
+    cp(meshFile, joinpath(datadir, "input/"*basename(meshFile)), remove_destination=true)
+    cp(meshFile, joinpath(datadir, "input/"*basename(meshFile)), remove_destination=true)
+    updateSettings("meshFileShadow:", joinpath(datadir, "input/"*basename(meshFile)))
   catch
     println(" ------------------------------------------------------------------")
     println(" - There was an error with setting up the meshfileshadow, try again later")
@@ -315,8 +353,8 @@ end
 os = "operatingSystem"
 @linux?  linux() : osx()
 
-if lowercase(ARGS[1]) == "--tmpdir"
-  config_tmpdir(ARGS)
+if lowercase(ARGS[1]) == "--datadir"
+  config_datadir(ARGS)
 
 elseif lowercase(ARGS[1]) == "--spicelib"
   config_spicelib(ARGS)
@@ -349,14 +387,14 @@ elseif lowercase(ARGS[1]) == "--datafiletestdust"
   config_data_file(ARGS, "dataFileTestDust:")
 
 elseif lowercase(ARGS[1]) == "--clean"
-  tmpdir = get_tmp_dir()
+  datadir = get_data_dir()
   previousDir = pwd()
-  cd(joinpath(tmpdir, "lib"))
+  cd(joinpath(datadir, "lib"))
   allFiles = readdir()
   if length(allFiles) > 0
     run(`rm $allFiles`)
   end
-  cd(joinpath(tmpdir, "input"))
+  cd(joinpath(datadir, "input"))
   allFiles = readdir()
   if length(allFiles) > 0
     run(`rm $allFiles`)
@@ -375,9 +413,9 @@ elseif lowercase(ARGS[1]) == "--help"
   if contains(lowercase(answ), "please")
     println(" - Thanks! You have the following options to call Config.jl:")
     println(" - All paths have to be absolute.")
-    println(" - option arguments are case insensitive (tmpDir == TmpDIR)")
+    println(" - option arguments are case insensitive (datadir == datadir)")
     println("")
-    println("--tmpdir          directory where files for runs are stored")
+    println("--datadir          directory where files for runs are stored")
     println("--spicelib        directory to cspice.a and csupport.a")
     println("--kernelfile      spice kernel metafile")
     println("--clib            custom shared library to be used in LOS calculation")
@@ -393,69 +431,74 @@ elseif lowercase(ARGS[1]) == "--help"
     println(" \U0001f631 Too bad, better luck next time...")
   end
 elseif lowercase(ARGS[1]) == "--auto"
-    println(" - START auto setup:")
-    println(" - This will setup the necessary parameters for the ices-desktop")
-    println(" - tool. settings are stored in ices-desktop/.userSettings.conf")
-    println(" - You have the following options to set:")
-    println(" - (All paths have to be absolute.)")
-    println("")
-    println("--tmpdir          directory where files for runs are stored")
-    println("--spicelib        directory to cspice.a and csupport.a")
-    println("--kernelfile      spice kernel metafile")
-    println("--meshfile        .ply file of the body surface mesh")
-    println("--datafile        Full path to .h5 or .dat AMPS output file")
-    println("--clib            custom shared library to be used in LOS calculation")
-    println("--meshfileshadow  .ply file of the body surface mesh for shadow calc.")
-    println("--docheckshadow   yes or no if shadow calculation is needed")
-    println("")
-    println("")
-    currentDir = pwd()
-    defaultDir = joinpath(currentDir, "tmp")
-    println(" - type in directory to store input and output of computations:")
-    print("--tmpdir ", defaultDir)
+  println(" - START auto setup:")
+  println(" - This will setup the necessary parameters for the ices-desktop")
+  println(" - tool. settings are stored in ices-desktop/.userSettings.conf")
+  println(" - You have the following options to set:")
+  println(" - (All paths have to be absolute.)")
+  println("")
+  println(" - --datadir         directory where files for runs are stored")
+  println(" - --spicelib        directory to cspice.a and csupport.a")
+  println(" - --kernelfile      spice kernel metafile")
+  println(" - --meshfile        .ply file of the body surface mesh")
+  println(" - --datafile        Full path to .h5 or .dat AMPS output file")
+  println(" - --clib            custom shared library to be used in LOS calculation")
+  println(" - --meshfileshadow  .ply file of the body surface mesh for shadow calc.")
+  println(" - --docheckshadow   yes or no if shadow calculation is needed")
+  println("")
+  println("")
+  currentDir = pwd()
 
-  arg = parseCmdLineArg()
-  if length(arg) < 1
-    arg = defaultDir
-  end
-  config_tmpdir(["", arg])
+  defaultDir = joinpath(currentDir, "data")
+  print(" - --datadir   ", defaultDir)
+  config_datadir(["", defaultDir])
   println("OK")
 
+  # spice installation
   defaultDir = joinpath(pwd(), "cspice/lib/")
-  println("defaultDirSpice: ", defaultDir)
   if !isdir(defaultDir)
-    defaultDir = ""
+    get_spice(currentDir)
+    run(`tar -zxvf cspice.tar.Z`)
+    rm("cspice.tar.Z")
+    println("Downloaded and extracted CSPICE library")
   end
-  print("--spicelib ", defaultDir)
-  arg = parseCmdLineArg()
-  if length(arg) < 1
-    arg = defaultDir
+  print(" - --spicelib   ", defaultDir)
+  println("OK")
+  config_spicelib(["", defaultDir])
+
+  # installation of spice kernels
+  if !isdir("spiceKernels")
+    get_spice_kernels()
+    run(`unzip spiceKernels.zip`)
+    println(" - Downloaded SPICE kernels")
   end
-  config_spicelib(["", arg])
-  println("OK")
 
-  defaultFile = joinpath(pwd(), "spiceKernels/metafiles/operationalKernels.tm")
-  if !isfile(defaultFile)
-    defaultFile = ""
+  if isfile(joinpath(pwd(), "spiceKernels/metafiles/operationalKernels.tm"))
+    defaultFile = joinpath(pwd(), "spiceKernels/metafiles/operationalKernels.tm")
+    print(" - --kernelfile ", defaultFile)
+    config_kernelfile(["", defaultFile])
+    println("  OK")
+    rm("spiceKernels.zip")
+  else
+    println(" - Default SPICE kernels not found: ", defaultFile )
+    println(" - Please set it up later with 'Julia Config.jl --kernelfile <path to kernelfile>'")
   end
-  print("--kernelfile ", defaultFile)
-  arg = parseCmdLineArg()
-  if length(arg) < 1
-    arg = defaultDir
+
+  get_additional_data()
+  run(`unzip additionalData.zip`)
+  for fileName in readdir(joinpath(currentDir, "additionalData"))
+    cp(joinpath(currentDir, "additionalData", fileName), joinpath(currentDir, "data", fileName),
+      remove_destination=true)
   end
-  config_kernelfile(["", arg])
-  println("OK")
 
-  print("--meshfile ")
-  arg = parseCmdLineArg()
-  config_meshfile(["", arg])
-  println("OK")
+  meshfile = joinpath(currentDir, "data", "SHAP5.ply")
+  config_meshfile(["", meshfile])
 
-  print("--datafile ")
-  arg = parseCmdLineArg()
-  config_data_file(["", arg])
-  println("OK")
+  datafile = joinpath(currentDir, "data", "SHAP5-2.2-20150304T1200.H2O.dat")
+  config_data_file(["", datafile])
 
+  println()
+  println(" - You can check/modify your settings in the .userSettings.conf file.")
   println()
   println(" - Mandatory settings done, continue with optional settings? ")
   println("   skip a parameter by hitting enter without giving an input.")
@@ -463,18 +506,20 @@ elseif lowercase(ARGS[1]) == "--auto"
   answ = readline(STDIN)
   if !contains(answ, "n")
     println()
-    print("--clib ")
+    print(" - --clib ")
     arg = parseCmdLineArg()
     if length(arg) < 1
+      println()
       println(" - ...skipped")
     else
       config_clib(["", arg])
       println("OK")
     end
 
-    print("--meshFileShadow ")
+    print(" - --meshFileShadow   ")
     arg = parseCmdLineArg()
     if length(arg) < 1
+      println()
       println(" - ...skipped")
     else
       config_meshfileshadow(["", arg])
