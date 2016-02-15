@@ -36,19 +36,7 @@ Julia
      You should now be in the julia REPL (Read-Eval-Print-Loop) environment. The julia logo should be visible
      and some information on the version and build of your copy of julia.
      You can exit the Julia REPL by typing exit(), quit() or pressing CTRL+D
-     
-
-  3. If it does not exist, create the file `.juliarc.jl` in your home
-     directory. You can look up the home directory by typing `homedir()` in the Julia REPL.
-     Then add the following line to the .juliarc.jl file:
-
-     ```
-     push!(LOAD_PATH, pwd())
-     ```
-
-     This includes the current directory in which julia is running
-     to the LOAD_PATH. (The list of places where Julia looks for modules
-     to load)
+  
      
   4. Inside the ices-desktop directory there is the `install.jl` script. Executing this script will
      install all missing julia packages. (Extensions to the julia base functionality)
