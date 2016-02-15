@@ -1,5 +1,6 @@
 INSTALLATION
 ============
+Only 64 bit machines with Linux or OSX are supported.
 
 Julia
 ------
@@ -7,7 +8,6 @@ Julia
   1. install julia version >= 0.4 via you OS package manager or else you can find binaries at the link below:
   
      http://julialang.org/downloads/
-
 
 
   2. a)
@@ -26,7 +26,6 @@ Julia
      **Linux users**: If you installed via package manager or similar, no further steps are required.
      Otherwise modify your PATH variable accordingly.
      
-     **Windows users**: Modify your environment variable "PATH" to include the directory where Julia.exe is located. 
 
      b)
      open a new terminal or source your current session, then
@@ -34,22 +33,12 @@ Julia
 
      julia
 
-     You should now be in the julia REPL (Read-Eval-Print-Loop) environment.
-     Then execute the following commands one by one from within the Julia
-     REPL to install necessary packages
-     ```
-     Pkg.add("DataFrames")
-     Pkg.add("HDF5")
-     Pkg.add("JLD")
-     Pkg.add("PyPlot")
-     Pkg.update()
-     ```
+     You should now be in the julia REPL (Read-Eval-Print-Loop) environment. The julia logo should be visible
+     and some information on the version and build of your copy of julia.
+     You can exit the Julia REPL by typing exit(), quit() or pressing CTRL+D
      
-     You can exit the Julia REPL by typing exit(), quit() or CTRL+D
-     
-    
 
-  3. if it does not exist, create the file `.juliarc.jl` in your home
+  3. If it does not exist, create the file `.juliarc.jl` in your home
      directory. You can look up the home directory by typing `homedir()` in the Julia REPL.
      Then add the following line to the .juliarc.jl file:
 
@@ -60,11 +49,29 @@ Julia
      This includes the current directory in which julia is running
      to the LOAD_PATH. (The list of places where Julia looks for modules
      to load)
+     
+  4. Inside the ices-desktop directory there is the `install.jl` script. Executing this script will
+     install all missing julia packages. (Extensions to the julia base functionality)
+     Run the script by typing:
+
+    ```
+    julia install.jl
+    ```
+    
+    This step is only necessary once. After that, all those packages will remain available. However, these
+    packages are being updated every now and then. To make sure you run on a current version you can start
+    the julia REPL and type:
+    
+    ```
+    Pkg.update()
+    ```
+    
+    every few weeks. This will download and install the newest available versions.
 
 
 Git
 ----
-  Git is not necessary to install, you can simply download the ices-desktop tool from this page.
+  Git is not necessary to install (but recommended), you can simply download the ices-desktop tool from this page.
   However, if you install git you will be able to update the tool to the newest version via git
   through the command line using `git pull`, which downloads the latest version of the tool. If you
   install git and are a first time user, provide the following information by command line:
@@ -97,19 +104,6 @@ Ices-Desktop
   git pull
   ```
 
-Spice
------
-  1. Download and unzip the cspice library (the file **cspice.tar.Z**) from
-      https://naif.jpl.nasa.gov/naif/toolkit_C.html
-  2. Move the extracted folder "cspice" into the ices-desktop folder, parallel to "src".
-
-Additional Data
----------------
-  Request additional data from andre. This includes the mesh files of the CG shape model,
-  the DSMC data files and the spice kernel files.
-  You will get a link to download a zip file. Put this zip file into ices-desktop and
-  extract it there.
-
 --------------------------------------------------------------------------------
 
 CONFIGURATION
@@ -125,7 +119,10 @@ Start a setup procedure by typing:
 julia Config.jl --auto
 ```
 This will run you through all the mandatory settings and the most useful
-optional settings. Those user settings control e.g. where the computed results
+optional settings. During this set up a few more files will be downloaded from the
+internet and installed on your machine. (e.g. the Naif-SPICE library, SPICE kernel files,
+Shape models of 67P and one test case of AMPS-DSMC data.)
+Your user settings control e.g. where the computed results
 are stored, which data file is to be loaded, what shape file is used etc.
 Those settings are stored in ices-desktop/.userSettings.conf
 **Please read the additional information about the configuration settings
@@ -167,6 +164,7 @@ TEST
 
 
 so a full command will look like:
+
 ```
 julia main.jl 2014-12-24T00:00:00 ALICE
 ```
