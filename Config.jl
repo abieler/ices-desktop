@@ -11,28 +11,35 @@ root_url = "http://naif.jpl.nasa.gov/pub/naif/toolkit/C/"
 pkg_name = "packages/cspice.tar.Z"
 
 full_url = root_url * platform_url * pkg_name
-
-println(" - Downloading SPICE library... this might take a moment.")
+println()
+println(" - Downloading SPICE library:")
+println("   ", full_url)
+print("   This might take a moment...   ")
 cspice_archive = get(full_url)
-println(" - Saving SPICE library to disk: "), joinpath(path, "cspice.tar.Z")
+println("OK")
 save(cspice_archive, joinpath(path, "cspice.tar.Z"))
-println(" - OK")
 end
 
 function get_spice_kernels()
-  print(" - Downloading SPICE kernels... this might take a moment.")
   url = "https://www.dropbox.com/s/7qr8e1kmeij2e71/spiceKernels.zip?dl=1"
+  println()
+  println(" - Downloading SPICE kernels:")
+  println("   ", url)
+  print("   This might take a moment...   ")
   kernels = get(url)
   save(kernels, "spiceKernels.zip")
-  println("  OK")
+  println("OK")
 end
 
 function get_additional_data()
-  print(" - Downloading additional data... this might take a moment.")
   url = "https://www.dropbox.com/s/rp23i57dgwjpkob/additionalData.zip?dl=1"
+  println()
+  println(" - Downloading additional data:")
+  println("   ", url)
+  print("   This might take a moment...   ")
   data = get(url)
   save(data, "additionalData.zip")
-  println("  OK")
+  println("OK")
 end
 
 
@@ -155,7 +162,6 @@ end
 function config_data_file(ARGS, case="dataFile:")
   try
     dataFile = ARGS[2]
-    @show(dataFile)
     datadir = get_data_dir()
     if contains(dataFile, ".h5")
       cp(dataFile, joinpath(datadir, "input/"*basename(dataFile)), remove_destination=true)
@@ -203,30 +209,30 @@ function config_datadir(ARGS)
     if isdir(rundir)
       println(" - datadir already exists")
       if (isdir(joinpath(rundir, "lib")) | isdir(joinpath(rundir, "input")))
-        print(" - directory 'lib' or 'input' already exist, remove them? (y/n): ")
+        print(" - directory 'lib', 'input' or 'output' already exist, replace them? (y/n): ")
         answer = readline(STDIN)
         if contains(lowercase(answer), "y")
-          try
-            rm(joinpath(rundir, "lib"), recursive=true)
-          catch
-          end
-          try
-            rm(joinpath(rundir, "input"), recursive=true)
-          catch
+          for dirname in ["lib", "input", "output"]
+            try
+              rm(joinpath(rundir, dirname), recursive=true)
+            catch
+            end
           end
           mkdir(joinpath(rundir, "lib"))
           mkdir(joinpath(rundir, "input"))
           mkdir(joinpath(rundir, "output"))
         end
       else
-        println(" - create new directories 'lib' and 'input'")
+        println(" - create new directories 'lib', 'input' and 'output'")
         mkdir(joinpath(rundir, "lib"))
         mkdir(joinpath(rundir, "input"))
+        mkdir(joinpath(rundir, "output"))
       end
     else
       mkdir(rundir)
       mkdir(joinpath(rundir, "lib"))
       mkdir(joinpath(rundir, "input"))
+      mkdir(joinpath(rundir, "output"))
     end
     touch(".userSettings.conf")
     updateSettings("dataDir:", rundir)
@@ -319,8 +325,6 @@ function config_meshfile(ARGS)
     println(" - to set it with 'julia Config.jl --meshfile /path/to/meshfile.ply'")
     println(" ------------------------------------------------------------------")
   end
-
-
 end
 
 function config_meshfileshadow(ARGS)
@@ -450,7 +454,7 @@ elseif lowercase(ARGS[1]) == "--auto"
   currentDir = pwd()
 
   defaultDir = joinpath(currentDir, "data")
-  print(" - --datadir   ", defaultDir)
+  print(" - --datadir ", defaultDir, "   ")
   config_datadir(["", defaultDir])
   println("OK")
 
@@ -458,26 +462,24 @@ elseif lowercase(ARGS[1]) == "--auto"
   defaultDir = joinpath(pwd(), "cspice/lib/")
   if !isdir(defaultDir)
     get_spice(currentDir)
-    run(`tar -zxvf cspice.tar.Z`)
+    run(`tar -zxf cspice.tar.Z`)
     rm("cspice.tar.Z")
-    println("Downloaded and extracted CSPICE library")
   end
-  print(" - --spicelib   ", defaultDir)
+  print("   --spicelib   ", defaultDir, "   ")
   println("OK")
   config_spicelib(["", defaultDir])
 
   # installation of spice kernels
   if !isdir("spiceKernels")
     get_spice_kernels()
-    run(`unzip spiceKernels.zip`)
-    println(" - Downloaded SPICE kernels")
+    run(`unzip -qq spiceKernels.zip`)
   end
 
   if isfile(joinpath(pwd(), "spiceKernels/metafiles/operationalKernels.tm"))
     defaultFile = joinpath(pwd(), "spiceKernels/metafiles/operationalKernels.tm")
-    print(" - --kernelfile ", defaultFile)
+    print("   --kernelfile ", defaultFile, "   ")
     config_kernelfile(["", defaultFile])
-    println("  OK")
+    println("OK")
     rm("spiceKernels.zip")
   else
     println(" - Default SPICE kernels not found: ", defaultFile )
@@ -485,11 +487,13 @@ elseif lowercase(ARGS[1]) == "--auto"
   end
 
   get_additional_data()
-  run(`unzip additionalData.zip`)
+  run(`unzip -qq additionalData.zip`)
   for fileName in readdir(joinpath(currentDir, "additionalData"))
     cp(joinpath(currentDir, "additionalData", fileName), joinpath(currentDir, "data", fileName),
       remove_destination=true)
   end
+  rm("additionalData.zip")
+  run(`rm -r additionalData`)
 
   meshfile = joinpath(currentDir, "data", "SHAP5.ply")
   config_meshfile(["", meshfile])

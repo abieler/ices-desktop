@@ -15,12 +15,20 @@ function build_octree(filePath, fileNameBase)
   varNames = h5read(joinpath(filePath, fileNameBase * ".h5"), "oct/varNames")
 
   varIndexes_user = Int64[]
-  varNames_user = AbstractString[]
-  if false
+  varNames_user = AbstractString["x", "y", "z"]
+  userVars = parseUserFile("variables:")
+  if length(userVars) > 1
+    userVars = split(userVars, ',')
     for i=1:length(varNames)
+        if in(varNames[i], userVars)
+          push!(varNames_user, varNames[i])
+          push!(varIndexes_user, i-3)
+          # -3 because x,y,z are also in the variables, but are not considered
+        end
     end
+    numberDensity = numberDensity[varIndexes_user, :]
+    varNames = varNames_user
   end
-
 
   xMax = maximum(nodes[:,:,1])
   yMax = maximum(nodes[:,:,2])
@@ -139,8 +147,6 @@ function assign_triangles!(oct, allTriangles)
      end
  end
 end
-
-
 
 function build_nodes(nCells::Int64, nodeCoordinates::Array{Float64,2},
                      cubeIndices::Array{Int64,2})
@@ -262,14 +268,12 @@ function insertChild(point::Array{Float64,1}, parent::Block, child::Block)
   end
 end
 
-
 function populate_octree(oct::Block, blocks::Array{Block, 1}, nBlocks::Int64)
   for i=1:nBlocks
     insertChild(blocks[i].origin, oct, blocks[i])
   end
   return oct
 end
-
 
 function findBlockContainingPoint(point::Array{Float64,1}, block::Block)
   if !block.isLeaf

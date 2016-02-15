@@ -8,8 +8,7 @@ include("octree.jl")
 @everywhere include("raytrace.jl")
 
 global const clib = parseUserFile("clibFile:")
-@show(clib)
-
+println(" - start")
 etStr = ARGS[1]
 metaFile = parseUserFile("kernelFile:")
 try
@@ -94,7 +93,7 @@ println(" - nVars : ", nVars)
 nTriangles, allTriangles, totalSurfaceArea = load_ply_file(meshFile)
 
 assign_triangles!(oct, allTriangles)
-
+println(" - performing LOS calculations, please wait...")
 @time ccd, mask = doIntegration(oct, rPointing, rStart, nVars, allTriangles,
                           doCheckShadow_bool)
 

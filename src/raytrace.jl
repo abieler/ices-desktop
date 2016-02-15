@@ -293,7 +293,6 @@ function doIntegration(oct::Block, rPointing, rStart, nVars, allTriangles,
       for k=1:3
         @inbounds r[k] = rStart[k]
       end
-      #distance = sqrt(r[1]*r[1] + r[2]*r[2] + r[3]*r[3])
       distance = norm_vec(r)
       lMax = get_lMax(lMax, iTriangle, r, lIntersect, llMax)
       reset_data!(nVars, data, dataNew, dataOld)
