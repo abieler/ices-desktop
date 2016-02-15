@@ -14,6 +14,14 @@ function build_octree(filePath, fileNameBase)
   numberDensity = h5read(joinpath(filePath, fileNameBase * ".h5"), "oct/numberDensity")
   varNames = h5read(joinpath(filePath, fileNameBase * ".h5"), "oct/varNames")
 
+  varIndexes_user = Int64[]
+  varNames_user = AbstractString[]
+  if false
+    for i=1:length(varNames)
+    end
+  end
+
+
   xMax = maximum(nodes[:,:,1])
   yMax = maximum(nodes[:,:,2])
   zMax = maximum(nodes[:,:,3])

@@ -231,7 +231,8 @@ function load_AMPS_data(fileName::UTF8String)
         c5 = !ismatch(r"Dust", variable)
         c6 = ismatch(r"V[012]", variable)
         c7 = ismatch(r"Speed", variable)
-        if (c1 & c2) | ((c3 | c4 | c6 | c7) & c5 & !isDustCase)
+        c8 = ismatch(r"Trot", variable)
+        if (c1 & c2) | ((c3 | c4 | c6 | c7 | c8) & c5 & !isDustCase)
           if myid() ==1
             println(" - variable: " * variable)
           end
