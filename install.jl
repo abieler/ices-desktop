@@ -3,7 +3,15 @@ Pkg.add("DataFrames")
 Pkg.add("HDF5")
 Pkg.add("JLD")
 Pkg.add("PyPlot")
+
+Pkg.clone("https://github.com/abieler/Spice.jl.git")
+
 Pkg.update()
+
+using Spice
+
+init_spice()
+
 
 
 if !isfile(joinpath(homedir(), ".juliarc.jl"))
