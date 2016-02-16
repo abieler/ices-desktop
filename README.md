@@ -282,17 +282,29 @@ show this message"
 Keywords:
 ---------
 `clibFile:` 
+
 `kernelFile:`
+
 `dataFile:`
+
 `meshFile:`
+
 `meshFileShadow:`
+
 `doCheckShadow:`
+
 `pltColorMap:`
+
 `pltLevels:`
+
 `pltTitle:`
+
 `pltFontSize:`
+
 `pltAdditionalBorderPx:`
+
 `pltBlankBody:`
+
 `variables:`
 
 
