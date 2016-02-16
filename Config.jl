@@ -1,3 +1,4 @@
+using Spice
 using Requests
 import Requests: get
 
@@ -245,34 +246,39 @@ function config_datadir(ARGS)
 
 end
 
-function config_spicelib(ARGS)
-  try
-    sharedLibPath = ARGS[2]
-    datadir = get_data_dir()
-    cp(joinpath(sharedLibPath, "cspice.a"),
-       joinpath(datadir, "lib/cspice.a"),
-       remove_destination=true)
+function config_spicelib(ARGS, isLib=false)
+  if !isLib
+    try
+      sharedLibPath = ARGS[2]
+      datadir = get_data_dir()
+      cp(joinpath(sharedLibPath, "cspice.a"),
+         joinpath(datadir, "lib/cspice.a"),
+         remove_destination=true)
 
-    cp(joinpath(sharedLibPath, "csupport.a"),
-       joinpath(datadir, "lib/csupport.a"),
-       remove_destination=true)
+      cp(joinpath(sharedLibPath, "csupport.a"),
+         joinpath(datadir, "lib/csupport.a"),
+         remove_destination=true)
 
-    if os == "linux"
-      objectFiles = compileLinux(datadir)
-      updateSettings("spicelib:", joinpath(datadir, "lib/spice.so"))
-    else
-      objectFiles = compileOSX(datadir)
-      updateSettings("spicelib:", joinpath(datadir, "lib/spice.dylib"))
+      if os == "linux"
+        objectFiles = compileLinux(datadir)
+        updateSettings("spicelib:", joinpath(datadir, "lib/spice.so"))
+      else
+        objectFiles = compileOSX(datadir)
+        updateSettings("spicelib:", joinpath(datadir, "lib/spice.dylib"))
+      end
+      previousDir = pwd()
+      cd(joinpath(datadir, "lib"))
+      run(`rm $objectFiles`)
+      cd(previousDir)
+    catch
+      println(" ------------------------------------------------------------------")
+      println(" - There was an error with setting up the spicelib, try again later")
+      println(" - to set it with 'julia Config.jl --spicelib /path/to/spicelib'")
+      println(" ------------------------------------------------------------------")
     end
-    previousDir = pwd()
-    cd(joinpath(datadir, "lib"))
-    run(`rm $objectFiles`)
-    cd(previousDir)
-  catch
-    println(" ------------------------------------------------------------------")
-    println(" - There was an error with setting up the spicelib, try again later")
-    println(" - to set it with 'julia Config.jl --spicelib /path/to/spicelib'")
-    println(" ------------------------------------------------------------------")
+  else
+    sharedLib = ARGS[2]
+    updateSettings("spicelib:", sharedLib)
   end
 end
 
@@ -459,15 +465,18 @@ elseif lowercase(ARGS[1]) == "--auto"
   println("OK")
 
   # spice installation
+  #=
   defaultDir = joinpath(pwd(), "cspice/lib/")
   if !isdir(defaultDir)
     get_spice(currentDir)
     run(`tar -zxf cspice.tar.Z`)
     rm("cspice.tar.Z")
   end
-  print("   --spicelib   ", defaultDir, "   ")
+  =#
+  print("   --spicelib   ", sharedLib, "   ")
   println("OK")
-  config_spicelib(["", defaultDir])
+  isLib = true
+  config_spicelib(["", sharedLib], isLib)
 
   # installation of spice kernels
   if !isdir("spiceKernels")

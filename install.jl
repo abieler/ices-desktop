@@ -35,3 +35,6 @@ else
     close(fid)
   end
 end
+
+
+run(`julia Config.jl --auto`)
