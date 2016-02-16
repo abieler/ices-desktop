@@ -37,24 +37,6 @@ Julia
      and some information on the version and build of your copy of julia.
      You can exit the Julia REPL by typing exit(), quit() or pressing CTRL+D
   
-     
-  4. Inside the ices-desktop directory there is the `install.jl` script. Executing this script will
-     install all missing julia packages. (Extensions to the julia base functionality)
-     Run the script by typing:
-
-    ```
-    julia install.jl
-    ```
-    
-    This step is only necessary once. After that, all those packages will remain available. However, these
-    packages are being updated every now and then. To make sure you run on a current version you can start
-    the julia REPL and type:
-    
-    ```
-    Pkg.update()
-    ```
-    
-    every few weeks. This will download and install the newest available versions.
 
 
 Git
@@ -72,53 +54,47 @@ Git
 
 Ices-Desktop
 ------------
-  You can either download the ices-desktop tool by clicking the "Download ZIP" button on this page, or
-  install it via git.
+  1. You can either download the ices-desktop tool by clicking the "Download ZIP" button on this page, or
+     install it via git.
+    
+     If you choose the "Download ZIP" way, extract the archive on your hard drive and rename the
+     extracted directory to "ices-desktop". You can put this folder wherever you want in your file system.
+    
+     For installation by git; cd into the directory you want the tool to be installed and execute
+     the following command:
+    
+     ```
+     git clone https://github.com/abieler/ices-desktop.git
+     ```
+    
+     this downloads all necessary files from the web into a folder "ices-desktop". You can move this directory
+     around your file system wherever you want. For updates later on cd into the ices-desktop folder and execute:
+    
+     ```
+     git pull
+     ```
   
-  If you choose the "Download ZIP" way, extract the archive on your hard drive and rename the
-  extracted directory to "ices-desktop". You can put this folder wherever you want in your file system.
-  
-  For installation by git; cd into the directory you want the tool to be installed and execute
-  the following command:
-  
-  ```
-  git clone https://github.com/abieler/ices-desktop.git
-  ```
-  
-  this downloads all necessary files from the web into a folder "ices-desktop". You can move this directory
-  around your file system wherever you want. For updates later on cd into the ices-desktop folder and execute:
-  
-  ```
-  git pull
-  ```
+  2. Inside the ices-desktop directory there is the `install.jl` script. Executing this script will
+     install all missing julia packages. (Extensions to the julia base functionality)
+     Run the script by typing:
+
+     ```
+     julia install.jl
+     ```
+    
+     This step is only necessary once. After that, all those packages will remain available. However, these
+     packages are being updated every now and then. To make sure you run on a current version you can start
+     the julia REPL and type:
+    
+     ```
+     Pkg.update()
+     ```
+    
+     every few weeks. This will download and install the newest available versions.
+     
+     After this script is finished you are good to go.
 
 --------------------------------------------------------------------------------
-
-CONFIGURATION
-=============
-Before you can run the line of sight integration tool you need to go through
-a couple of configuration steps. All configurations can be done through the
-Config.jl script which is found at:
-
-ices-desktop/Config.jl
-
-Start a setup procedure by typing:
-```
-julia Config.jl --auto
-```
-This will run you through all the mandatory settings and the most useful
-optional settings. During this set up a few more files will be downloaded from the
-internet and installed on your machine. (e.g. the Naif-SPICE library, SPICE kernel files,
-Shape models of 67P and one test case of AMPS-DSMC data.)
-Your user settings control e.g. where the computed results
-are stored, which data file is to be loaded, what shape file is used etc.
-Those settings are stored in ices-desktop/.userSettings.conf
-**Please read the additional information about the configuration settings
-at the bottom of this document.**
-
-After this script is finished you are good to go.
---------------------------------------------------------------------------------
-
 RUNNING
 =======
 
@@ -157,20 +133,19 @@ so a full command will look like:
 julia main.jl 2014-12-24T00:00:00 ALICE
 ```
 --------------------------------------------------------------------------------
-
-
-
-Some further notes on the .userSettings.conf file:
--------------------------------------------------
-
-The .userSettings.conf file is just a stack of
+CONFIGURATION
+=============
+You can configure the settings of the ices-desktop runs from within the `.userSettings.conf` file.
+This file stores information on which spice kernels to load, which dsmc output files to load and so forth.
+The `.userSettings.conf` file is just a stack of
 "keyWord:parameter"
 pairs.
 
 During runtime this ascii file is parsed for those keywords.
 (Actually for "keyWord:")
 
-The order of the keyword stack is not important.
+The order of the keyword stack is not important and there is a list of all keywords that can be used at
+the bottom of this paragraph.
 
 You can add your own text for commenting and such, just be sure to not use any
 of the keywords in that text.
@@ -185,7 +160,7 @@ julia Config.jl --option ARG
 
 with some examples:
 
-julia Config.jl --tmpdir /home/abieler/tmp
+julia Config.jl --datadir /home/abieler/tmp
 julia Config.jl --spicelib /home/abieler/ices-desktop/cspice/lib
 julia Config.jl --kernelfile /home/abieler/ices-desktop/spiceKernels/metafiles/operationalKernels.tm
 julia Config.jl --dataFile /home/abieler/ices-desktop/additionalData/SHAP5-2.2-20150304T1200.CO2.dat
@@ -195,7 +170,7 @@ the following options are available ( * ) are mandatory setups)
 
 
 
-**--tmpdir** path-to-temporary-directory ( * )
+**--datadir** path-to-data-directory ( * )
 
   This directory is used to store files necessary for the LOS tool. It can be
   picked freely. In this directory the Config.jl file will create two subdirs
@@ -304,8 +279,26 @@ remove 'lib' and 'input' dirs in tmpfile"
 
 show this message"
 
-DEBUG
------
+Keywords:
+---------
+`clibFile:` 
+`kernelFile:`
+`dataFile:`
+`meshFile:`
+`meshFileShadow:`
+`doCheckShadow:`
+`pltColorMap:`
+`pltLevels:`
+`pltTitle:`
+`pltFontSize:`
+`pltAdditionalBorderPx:`
+`pltBlankBody:`
+`variables:`
+
+
+DEBUGGING
+=========
+
 Julia Blosc.jl installation sometimes does not work on first try. 2 sources of errors have been identified so far:
 
 ```
