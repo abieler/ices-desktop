@@ -67,16 +67,16 @@ function pick_dsmc_case(df, et, species, verbose=true)
   llon = llon / pi * 180.0
   llat = llat / pi * 180.0
 
-  @show(llat)
-  @show(llon)
-
   df[:diff_lon] = abs((((df[:lon] .- llon) + 180) % 360) - 180)
   df[:diff_lat] = abs((((df[:lat] .- llat) + 180) % 360) - 180)
   sort!(df, cols=[:diff_lat, :diff_lon])
 
   dfNew = df[df[:species] .== species, :]
   selected_case = dfNew[1,:file_name]
+
   if verbose
+    @show(llat)
+    @show(llon)
     println(" - Case selected          : ", selected_case)
     println(" - difference in latitude : ", dfNew[1,:diff_lat])
     println(" - difference in longitude: ", dfNew[1,:diff_lon])
@@ -84,13 +84,14 @@ function pick_dsmc_case(df, et, species, verbose=true)
   return selected_case
 end
 
-function select_data_file()
+function select_data_file(et)
   if length(parseUserFile("dataFile:")) < 1
     dataDir = parseUserFile("dataDir:")
     if length(dataDir) < 1
       println("Define either dataDir: or dataFile: in '.userSettings.conf'")
       exit()
     end
+
     species = parseUserFile("species:")
     if length(species) < 1
       println(" -  NO SPECIES DEFINED! Set name of species in .userSettings.conf with the \
@@ -98,10 +99,17 @@ function select_data_file()
       exit()
     end
     df = build_df(dataDir)
-    myCase = pick_dsmc_case(df, et, species)
+    myCase = pick_dsmc_case(df, et, species, false)
     myCase = joinpath(dataDir, myCase)
   else
     myCase = parseUserFile("dataFile:")
   end
+  return myCase
+end
+
+function select_data_file(df, et, species)
+  dataDir = parseUserFile("dataDir:")
+  myCase = pick_dsmc_case(df, et, species, false)
+  myCase = joinpath(dataDir, myCase)
   return myCase
 end

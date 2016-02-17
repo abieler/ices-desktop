@@ -40,14 +40,18 @@ function build_octree(filePath, fileNameBase)
   cellList = build_cells(nodes, cubeIndices, numberDensity, nCells)
   blocks = build_blocks(nBlocks, cellList, nodes, nCellsPerBlock)
   octree = Block(root, halfSize,1, initChildren, initCells, 5, 5, 5)
-  if myid() == 1
-    println(" - populating octree")
-  end
   populate_octree(octree, blocks, nBlocks)
 
   nVars = size(numberDensity,1)
 
   return octree, nVars, varNames[4:end]
+end
+
+
+function build_octree(fileName)
+  path = dirname(fileName)
+  bname = basename(fileName)[1:end-3]
+  build_octree(path, bname)
 end
 
 
@@ -216,7 +220,7 @@ function build_blocks(nBlocks::Int64, allCells::Array{Cell,1}, nodes::Array{Floa
   return blocks
 end
 
-function splitBlock(node::Block)
+function split_block(node::Block)
   nx = node.nx
   ny = node.ny
   nz = node.nz
@@ -240,7 +244,7 @@ function splitBlock(node::Block)
   node.children[8] = Block(xc8, node.halfSize/2, 1, Array(Block, 8), Array(Cell,1), nx, ny, nz)
 end
 
-function getOctantContainingPoint(point::Array{Float64,1}, block::Block)
+function octant_containing_point(point::Array{Float64,1}, block::Block)
     octant::Int64 = 1
     if (point[1] >= block.origin[1])
       octant += 4
@@ -254,15 +258,15 @@ function getOctantContainingPoint(point::Array{Float64,1}, block::Block)
   return octant
 end
 
-function insertChild(point::Array{Float64,1}, parent::Block, child::Block)
+function insert_child(point::Array{Float64,1}, parent::Block, child::Block)
   if (parent.isLeaf && point != parent.origin)
     parent.isLeaf = false
-    splitBlock(parent)
-    octant = getOctantContainingPoint(point, parent)
-    insertChild(point, parent.children[octant], child)
+    split_block(parent)
+    octant = octant_containing_point(point, parent)
+    insert_child(point, parent.children[octant], child)
   elseif !parent.isLeaf
-    octant = getOctantContainingPoint(point,  parent)
-    insertChild(point, parent.children[octant], child)
+    octant = octant_containing_point(point,  parent)
+    insert_child(point, parent.children[octant], child)
   else
     parent.cells = child.cells
   end
@@ -270,14 +274,15 @@ end
 
 function populate_octree(oct::Block, blocks::Array{Block, 1}, nBlocks::Int64)
   for i=1:nBlocks
-    insertChild(blocks[i].origin, oct, blocks[i])
+    insert_child(blocks[i].origin, oct, blocks[i])
   end
   return oct
 end
 
+#=
 function findBlockContainingPoint(point::Array{Float64,1}, block::Block)
   if !block.isLeaf
-    oct = getOctantContainingPoint(point, block)
+    oct = octant_containing_point(point, block)
     findBlockContainingPoint(point, block.children[oct])
   elseif block.isLeaf
     return block
@@ -311,6 +316,7 @@ function findCellInBlock(block::Block, point::Array{Float64, 1})
   cellIndex = 1 + fx + fy*nx + fz*nx*ny
   return round(Int, cellIndex)
 end
+=#
 
 function get_factor(minSize, maxSize, r)
   f = Ref{Cdouble}(1.0)

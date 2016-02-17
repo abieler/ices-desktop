@@ -10,7 +10,6 @@ include("case_picking.jl")
 
 global const clib = parseUserFile("clibFile:")
 println(" - start")
-etStr = ARGS[1]
 metaFile = parseUserFile("kernelFile:")
 try
   furnsh(metaFile)
@@ -19,7 +18,10 @@ catch e
   println(e)
   exit()
 end
+
+etStr = ARGS[1]
 et = str2et(etStr)
+
 if length(ARGS) == 2
   instrumentName = ARGS[2]
   instrument = rosetta_instruments[instrumentName]
@@ -38,7 +40,7 @@ else
   rotMat = eye(3)
 end
 
-const fileName = select_data_file() 
+const fileName = select_data_file(et)
 @show(fileName)
 const meshFile = parseUserFile("meshFile:")
 const doCheckShadow = parseUserFile("doCheckShadow:")

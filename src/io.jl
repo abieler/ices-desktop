@@ -482,3 +482,22 @@ function data2CSV(oct, oFile)
     end
   end
 end
+
+function timeFromFileName(fileName)
+  f = basename(fileName)
+  dateStr = matchall(r"(\d{8})", f)[1]
+  yyyy = parse(Int, dateStr[1:4])
+  mm = parse(Int, dateStr[5:6])
+  dd = parse(Int, dateStr[7:8])
+  timeStr = matchall(r"(T\d{4})", f)[1]
+  HH = parse(Int, timeStr[2:3])
+  MM = parse(Int, timeStr[4:5])
+  SS = 0
+  etStr = string(DateTime(yyyy, mm, dd, HH, MM, SS))
+  return etStr
+end
+
+function AUfromFileName(fileName)
+  f = basename(fileName)
+  parse(Float64, matchall(r"(\d+\.\d+)", f)[1])
+end
