@@ -143,8 +143,8 @@ function updateSettings(keyword, newValue)
   rm(".userSettings.bkp")
 end
 
-function get_data_dir()
-  keyword = "dataDir:"
+function get_working_dir()
+  keyword = "workingDir:"
   iFile = open(".userSettings.conf", "r")
   while !eof(iFile)
     line = readline(iFile)
@@ -154,7 +154,7 @@ function get_data_dir()
       return value
     end
   end
-  println(" - dataDir not found in .userSettings.conf.")
+  println(" - workingDir not found in .userSettings.conf.")
   println(" - run julia Config.jl --datadir <path to datadir>")
   close(iFile)
   exit()
@@ -163,10 +163,12 @@ end
 function config_data_file(ARGS, case="dataFile:")
   try
     dataFile = ARGS[2]
-    datadir = get_data_dir()
+    workingdir = get_working_dir()
     if contains(dataFile, ".h5")
-      cp(dataFile, joinpath(datadir, "input/"*basename(dataFile)), remove_destination=true)
-      updateSettings("dataFile:", joinpath(datadir, "input/"*basename(dataFile)))
+      if !(dataFile == joinpath(workingdir, "input/"*basename(dataFile)))
+        cp(dataFile, joinpath(workingdir, "input/"*basename(dataFile)), remove_destination=true)
+      end
+      updateSettings("dataFile:", joinpath(workingdir, "input/"*basename(dataFile)))
     else
       print(" - selected data file is not in HDF5 format. Build new .h5 file? (y/n) ")
       answ = parseCmdLineArg()
@@ -185,20 +187,22 @@ function config_data_file(ARGS, case="dataFile:")
         newBase = baseName[1:end-(length(ext)+1)] * ".h5"
         newDataFile = joinpath(path, newBase)
 
-        mv(newDataFile, joinpath(datadir, "input/"*newBase), remove_destination=true)
-        updateSettings(case, joinpath(datadir, "input/"*newBase))
+        if !(newDataFile == joinpath(workingdir, "input/"*newBase))
+          mv(newDataFile, joinpath(workingdir, "input/"*newBase), remove_destination=true)
+        end
+        updateSettings(case, joinpath(workingdir, "input/"*newBase))
       end
     end
   catch
-    println(" ------------------------------------------------------------------")
+    println(" --------------------------------------------------------------------")
     println(" - There was an error with setting up the data file, try again later")
     println(" - to set it with 'julia Config.jl --dataFile /path/to/data/file.dat'")
-    println(" ------------------------------------------------------------------")
+    println(" --------------------------------------------------------------------")
   end
 
 end
 
-function config_datadir(ARGS)
+function config_workingdir(ARGS)
   try
     rundir = ""
     try
@@ -236,11 +240,11 @@ function config_datadir(ARGS)
       mkdir(joinpath(rundir, "output"))
     end
     touch(".userSettings.conf")
-    updateSettings("dataDir:", rundir)
+    updateSettings("workingDir:", rundir)
   catch
     println(" ------------------------------------------------------------------")
-    println(" - There was an error with setting up the dataDir, try again later")
-    println(" - to set it with 'julia Config.jl --dataDir /path/to/dir'")
+    println(" - There was an error with setting up the workingDir, try again later")
+    println(" - to set it with 'julia Config.jl --workingDir /path/to/dir'")
     println(" ------------------------------------------------------------------")
   end
 
@@ -250,24 +254,24 @@ function config_spicelib(ARGS, isLib=false)
   if !isLib
     try
       sharedLibPath = ARGS[2]
-      datadir = get_data_dir()
+      workingdir = get_working_dir()
       cp(joinpath(sharedLibPath, "cspice.a"),
-         joinpath(datadir, "lib/cspice.a"),
+         joinpath(workingdir, "lib/cspice.a"),
          remove_destination=true)
 
       cp(joinpath(sharedLibPath, "csupport.a"),
-         joinpath(datadir, "lib/csupport.a"),
+         joinpath(workingdir, "lib/csupport.a"),
          remove_destination=true)
 
       if os == "linux"
         objectFiles = compileLinux(datadir)
-        updateSettings("spicelib:", joinpath(datadir, "lib/spice.so"))
+        updateSettings("spicelib:", joinpath(workingdir, "lib/spice.so"))
       else
         objectFiles = compileOSX(datadir)
-        updateSettings("spicelib:", joinpath(datadir, "lib/spice.dylib"))
+        updateSettings("spicelib:", joinpath(workingdir, "lib/spice.dylib"))
       end
       previousDir = pwd()
-      cd(joinpath(datadir, "lib"))
+      cd(joinpath(workingdir, "lib"))
       run(`rm $objectFiles`)
       cd(previousDir)
     catch
@@ -322,9 +326,13 @@ end
 function config_meshfile(ARGS)
   try
     meshFile = ARGS[2]
-    datadir = get_data_dir()
-    cp(meshFile, joinpath(datadir, "input/"*basename(meshFile)), remove_destination=true)
-    updateSettings("meshFile:", joinpath(datadir, "input/"*basename(meshFile)))
+    workingdir = get_working_dir()
+    if !(meshFile == joinpath(workingdir, "input/"*basename(meshFile)))
+      cp(meshFile, joinpath(workingdir, "input/"*basename(meshFile)), remove_destination=true)
+      updateSettings("meshFile:", joinpath(workingdir, "input/"*basename(meshFile)))
+    else
+      updateSettings("meshFile:", meshFile)
+    end
   catch
     println(" ------------------------------------------------------------------")
     println(" - There was an error with setting up the meshfile, try again later")
@@ -336,10 +344,10 @@ end
 function config_meshfileshadow(ARGS)
   try
     meshFile = ARGS[2]
-    datadir = get_data_dir()
-    cp(meshFile, joinpath(datadir, "input/"*basename(meshFile)), remove_destination=true)
-    cp(meshFile, joinpath(datadir, "input/"*basename(meshFile)), remove_destination=true)
-    updateSettings("meshFileShadow:", joinpath(datadir, "input/"*basename(meshFile)))
+    workingdir = get_working_dir()
+    cp(meshFile, joinpath(workingdir, "input/"*basename(meshFile)), remove_destination=true)
+    cp(meshFile, joinpath(workingdir, "input/"*basename(meshFile)), remove_destination=true)
+    updateSettings("meshFileShadow:", joinpath(workingdir, "input/"*basename(meshFile)))
   catch
     println(" ------------------------------------------------------------------")
     println(" - There was an error with setting up the meshfileshadow, try again later")
@@ -363,8 +371,8 @@ end
 os = "operatingSystem"
 @linux?  linux() : osx()
 
-if lowercase(ARGS[1]) == "--datadir"
-  config_datadir(ARGS)
+if lowercase(ARGS[1]) == "--workingdir"
+  config_workingdir(ARGS)
 
 elseif lowercase(ARGS[1]) == "--spicelib"
   config_spicelib(ARGS)
@@ -397,14 +405,14 @@ elseif lowercase(ARGS[1]) == "--datafiletestdust"
   config_data_file(ARGS, "dataFileTestDust:")
 
 elseif lowercase(ARGS[1]) == "--clean"
-  datadir = get_data_dir()
+  workingdir = get_working_dir()
   previousDir = pwd()
-  cd(joinpath(datadir, "lib"))
+  cd(joinpath(workingdir, "lib"))
   allFiles = readdir()
   if length(allFiles) > 0
     run(`rm $allFiles`)
   end
-  cd(joinpath(datadir, "input"))
+  cd(joinpath(workingdir, "input"))
   allFiles = readdir()
   if length(allFiles) > 0
     run(`rm $allFiles`)
@@ -425,7 +433,7 @@ elseif lowercase(ARGS[1]) == "--help"
     println(" - All paths have to be absolute.")
     println(" - option arguments are case insensitive (datadir == datadir)")
     println("")
-    println("--datadir          directory where files for runs are stored")
+    println("--workingdir          directory where files for runs are stored")
     println("--spicelib        directory to cspice.a and csupport.a")
     println("--kernelfile      spice kernel metafile")
     println("--clib            custom shared library to be used in LOS calculation")
@@ -434,6 +442,7 @@ elseif lowercase(ARGS[1]) == "--help"
     println("--meshfileshadow  .ply file of the body surface mesh for shadow calc.")
     println("--docheckshadow   yes or no if shadow calculation is needed")
     println("--datafile        Full path to .h5 or .dat AMPS output file")
+    println("--datadir        Full path to .h5 or .dat AMPS output file")
     println("--clean           remove 'lib' and 'input' dirs in tmpfile")
     println("--help            show this message")
 
@@ -447,11 +456,12 @@ elseif lowercase(ARGS[1]) == "--auto"
   println(" - You have the following options to set:")
   println(" - (All paths have to be absolute.)")
   println("")
-  println(" - --datadir         directory where files for runs are stored")
+  println(" - --workingdir      directory where files for runs are stored")
   println(" - --spicelib        directory to cspice.a and csupport.a")
   println(" - --kernelfile      spice kernel metafile")
   println(" - --meshfile        .ply file of the body surface mesh")
   println(" - --datafile        Full path to .h5 or .dat AMPS output file")
+  println(" - --datadir         Full path to .h5 or .dat AMPS output file")
   println(" - --clib            custom shared library to be used in LOS calculation")
   println(" - --meshfileshadow  .ply file of the body surface mesh for shadow calc.")
   println(" - --docheckshadow   yes or no if shadow calculation is needed")
@@ -459,20 +469,12 @@ elseif lowercase(ARGS[1]) == "--auto"
   println("")
   currentDir = pwd()
 
-  defaultDir = joinpath(currentDir, "data")
-  print(" - --datadir ", defaultDir, "   ")
-  config_datadir(["", defaultDir])
+  defaultDir = joinpath(currentDir, "work")
+  workingDir = joinpath(currentDir, "work")
+  print(" - --workingdir ", workingDir, "   ")
+  config_workingdir(["", workingDir])
   println("OK")
 
-  # spice installation
-  #=
-  defaultDir = joinpath(pwd(), "cspice/lib/")
-  if !isdir(defaultDir)
-    get_spice(currentDir)
-    run(`tar -zxf cspice.tar.Z`)
-    rm("cspice.tar.Z")
-  end
-  =#
   print("   --spicelib   ", sharedLib, "   ")
   println("OK")
   isLib = true
@@ -498,16 +500,18 @@ elseif lowercase(ARGS[1]) == "--auto"
   get_additional_data()
   run(`unzip -qq additionalData.zip`)
   for fileName in readdir(joinpath(currentDir, "additionalData"))
-    cp(joinpath(currentDir, "additionalData", fileName), joinpath(currentDir, "data", fileName),
+    cp(joinpath(currentDir, "additionalData", fileName), joinpath(workingDir, "input", fileName),
       remove_destination=true)
   end
   rm("additionalData.zip")
   run(`rm -r additionalData`)
 
-  meshfile = joinpath(currentDir, "data", "SHAP5.ply")
+  meshfile = joinpath(workingDir, "input", "SHAP5.ply")
+  println(" - Meshfile: ", meshfile)
   config_meshfile(["", meshfile])
 
-  datafile = joinpath(currentDir, "data", "SHAP5-2.2-20150304T1200.H2O.dat")
+  datafile = joinpath(workingDir, "input", "SHAP5-2.2-20150304T1200.H2O.dat")
+  println(" - DataFile: ", datafile)
   config_data_file(["", datafile])
 
   println()

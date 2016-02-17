@@ -3,15 +3,17 @@ Pkg.add("DataFrames")
 Pkg.add("HDF5")
 Pkg.add("JLD")
 Pkg.add("PyPlot")
-
-Pkg.clone("https://github.com/abieler/Spice.jl.git")
+try
+  Pkg.clone("https://github.com/abieler/Spice.jl.git")
+catch
+end
 
 Pkg.update()
 
 using Spice
 
+currentDir = pwd()
 init_spice()
-
 
 
 if !isfile(joinpath(homedir(), ".juliarc.jl"))
@@ -37,4 +39,5 @@ else
 end
 
 
+cd(currentDir)
 run(`julia Config.jl --auto`)

@@ -5,6 +5,7 @@ using Instrument
 
 include("io.jl")
 include("octree.jl")
+include("case_picking.jl")
 @everywhere include("raytrace.jl")
 
 global const clib = parseUserFile("clibFile:")
@@ -37,7 +38,8 @@ else
   rotMat = eye(3)
 end
 
-const fileName = parseUserFile("dataFile:")
+const fileName = select_data_file() 
+@show(fileName)
 const meshFile = parseUserFile("meshFile:")
 const doCheckShadow = parseUserFile("doCheckShadow:")
 
@@ -95,14 +97,13 @@ nTriangles, allTriangles, totalSurfaceArea = load_ply_file(meshFile)
 assign_triangles!(oct, allTriangles)
 println(" - performing LOS calculations, please wait...")
 @time ccd, mask = doIntegration(oct, rPointing, rStart, nVars, allTriangles,
-                          doCheckShadow_bool)
+                          doCheckShadow_bool, fileName)
 
 save_result(ccd, mask, nVars, nPixelsX, nPixelsY)
 try
   plot_result(ccd, mask, nVars, nPixelsX, nPixelsY)
 catch
 end
-cd(filePath)
-cd("../output")
+wrkDir = parseUserFile("workingDir:")
+cd(joinpath(wrkDir, "output"))
 writedlm("ccd.dat", ccd)
-#writedlm(joinpath(filePath, "ccd.dat"), ccd)

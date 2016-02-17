@@ -3,8 +3,8 @@ using DataFrames
 
 function save_result(ccd, mask, nVars, nPixelsX, nPixelsY)
     prevDir = pwd()
-    cd(filePath)
-    cd("../output")
+    wrkDir = parseUserFile("workingDir:")
+    cd(joinpath(wrkDir, "output"))
     ccd = reshape(ccd, nVars, nPixelsX, nPixelsY)
     ccd_sum = zeros(nPixelsX, nPixelsY)
     if doBlankBody

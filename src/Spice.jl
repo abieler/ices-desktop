@@ -34,7 +34,6 @@ function pxform(from, to, et)
   ccall((:pxform_c, sharedLib), Void, (Ptr{Cchar}, Ptr{Cchar}, Cdouble, Ptr{Cdouble}),
         from, to, et, rotMat)
   return rotMat
-
 end
 
 function reclat(a::Vector)

@@ -1,4 +1,3 @@
-using SQLite
 using Spice
 
 function timeFromFileName(fileName)
@@ -17,45 +16,92 @@ end
 
 function AUfromFileName(fileName)
   f = basename(fileName)
-  int(matchall(r"(\d+\.\d+)", f)[1])
+  parse(Float64, matchall(r"(\d+\.\d+)", f)[1])
 end
 
 
-function build_sql_db(dataDir)
-  try
-    rm("../input/myDB.sqlite")
-  catch
-  end
-  db = SQLite.DB("../input/myDB.sqlite")
-  myQuery = "CREATE TABLE dsmc_case(file_name TEXT,
-                                    AU INT,
-                                    species TEXT,
-                                    lon FLOAT,
-                                    lat FLOAT)"
-  query(db, myQuery)
-  for fileName in readdir(dataDir)
-    if contains(fileName, ".h5")
-      etStr = timeFromFileName(fileName)
-      AU = AUfromFileName(fileName)
+function build_df(dataDir)
+  df = DataFrame()
+  fileNames = AbstractString[]
+  AU = Float64[]
+  species = AbstractString[]
+  lon = Float64[]
+  lat = Float64[]
+  date = DateTime[]
+  for name in readdir(dataDir)
+    if contains(name, ".h5")
+      etStr = timeFromFileName(name)
+      t = DateTime(etStr[1:10], "yyyy-mm-dd")
+      au = AUfromFileName(name)
       et = utc2et(etStr)
-      species = split(fileName, '.')[end-1]
+      sp = split(name, '.')[end-1]
       rSUN, lt = spkpos("SUN", et, "67P/C-G_CK", "NONE", "CHURYUMOV-GERASIMENKO")
       r, llon, llat = reclat(rSUN)
       llon = llon / pi * 180.0
       llat = llat / pi * 180.0
-      myQuery = "INSERT INTO dsmc_case VALUES('$fileName', $AU, '$species', $llon, $llat)"
-      query(db, myQuery)
+
+      push!(fileNames, name)
+      push!(AU, au)
+      push!(species, sp)
+      push!(lon, llon)
+      push!(lat, llat)
+      push!(date, t)
     end
   end
+  df[:file_name] = fileNames
+  df[:date] = date
+  df[:AU] = AU
+  df[:species] = species
+  df[:lon] = lon
+  df[:lat] = lat
+
+  for t in df[:date]
+    df[df[:date] .== t, :lat] = mean(df[df[:date] .== t, :lat])
+  end
+  return df
 end
 
-function pick_dsmc_case(db, et, species)
+function pick_dsmc_case(df, et, species, verbose=true)
   rSUN, lt = spkpos("SUN", et, "67P/C-G_CK", "NONE", "CHURYUMOV-GERASIMENKO")
   r, llon, llat = reclat(rSUN)
   llon = llon / pi * 180.0
   llat = llat / pi * 180.0
 
-  myQuery = "SELECT file_name FROM dsmc_case WHERE species = $species ORDER BY abs( (((lat-($llat)) + 180) %% 360) - 180), abs( (((lon-($llon)) + 180) %% 360) - 180) LIMIT 1;"
-  sql_data = query(db, myQuery)
-  @show(sql_data)
+  @show(llat)
+  @show(llon)
+
+  df[:diff_lon] = abs((((df[:lon] .- llon) + 180) % 360) - 180)
+  df[:diff_lat] = abs((((df[:lat] .- llat) + 180) % 360) - 180)
+  sort!(df, cols=[:diff_lat, :diff_lon])
+
+  dfNew = df[df[:species] .== species, :]
+  selected_case = dfNew[1,:file_name]
+  if verbose
+    println(" - Case selected          : ", selected_case)
+    println(" - difference in latitude : ", dfNew[1,:diff_lat])
+    println(" - difference in longitude: ", dfNew[1,:diff_lon])
+  end
+  return selected_case
+end
+
+function select_data_file()
+  if length(parseUserFile("dataFile:")) < 1
+    dataDir = parseUserFile("dataDir:")
+    if length(dataDir) < 1
+      println("Define either dataDir: or dataFile: in '.userSettings.conf'")
+      exit()
+    end
+    species = parseUserFile("species:")
+    if length(species) < 1
+      println(" -  NO SPECIES DEFINED! Set name of species in .userSettings.conf with the \
+      keyword 'species:'")
+      exit()
+    end
+    df = build_df(dataDir)
+    myCase = pick_dsmc_case(df, et, species)
+    myCase = joinpath(dataDir, myCase)
+  else
+    myCase = parseUserFile("dataFile:")
+  end
+  return myCase
 end

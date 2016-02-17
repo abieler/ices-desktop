@@ -246,7 +246,7 @@ function norm_vec(r)
 end
 
 function doIntegration(oct::Block, rPointing, rStart, nVars, allTriangles,
-                       doCheckShadow)
+                       doCheckShadow, dataFileName)
     if doCheckShadow
       meshFile = parseUserFile("meshFileShadow:")
       if length(meshFile) < 1
@@ -256,7 +256,6 @@ function doIntegration(oct::Block, rPointing, rStart, nVars, allTriangles,
       nTrianglesShadow, allTrianglesShadow, totalSurfaceAreaShadow = load_ply_file(meshFile)
     end
 
-    dataFileName = parseUserFile("dataFile:")
     minDustSize = h5read(dataFileName, "oct/minDustSize")
     maxDustSize = h5read(dataFileName, "oct/maxDustSize")
 
@@ -287,6 +286,10 @@ function doIntegration(oct::Block, rPointing, rStart, nVars, allTriangles,
     end
 
     for i=1:nRays
+      if i % 1000 == 0
+        print("\r")
+        print(" - ", lpad(string(i/nRays*100),3,' '), " % done")
+      end
       updateVectors!(r, r_hat, rStart, rPointing, i)
       iTriangle, lIntersect = iTriangleIntersect(allTriangles, r, r_hat)
 
