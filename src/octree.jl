@@ -279,45 +279,6 @@ function populate_octree(oct::Block, blocks::Array{Block, 1}, nBlocks::Int64)
   return oct
 end
 
-#=
-function findBlockContainingPoint(point::Array{Float64,1}, block::Block)
-  if !block.isLeaf
-    oct = octant_containing_point(point, block)
-    findBlockContainingPoint(point, block.children[oct])
-  elseif block.isLeaf
-    return block
-  end
-end
-
-function findCellInBlock(block::Block, point::Array{Float64, 1})
-  nx = 5.0
-  ny = 5.0
-  nz = 5.0
-  x = point[1] - block.cells[1].nodes[1,1]
-  y = point[2] - block.cells[1].nodes[1,2]
-  z = point[3] - block.cells[1].nodes[1,3]
-  lx = block.halfSize[1] * 2.0 / nx
-  ly = block.halfSize[2] * 2.0 / ny
-  lz = block.halfSize[3] * 2.0 / nz
-  fx = fld(x, lx)
-  fy = fld(y, ly)
-  fz = fld(z, lz)
-
-  if fx > (nx-1.0)
-      fx = nx - 1.0
-  end
-  if fy > (ny-1.0)
-      fy = ny-1.0
-  end
-  if fz > (nz-1.0)
-      fz = nz-1.0
-  end
-
-  cellIndex = 1 + fx + fy*nx + fz*nx*ny
-  return round(Int, cellIndex)
-end
-=#
-
 function get_factor(minSize, maxSize, r)
   f = Ref{Cdouble}(1.0)
   ccall((:ColumnIntegrationFactor, clib), Void, (Cdouble, Cdouble, Cdouble,
@@ -357,4 +318,28 @@ function triLinearInterpolation!(cell::Cell, point, data,
     end
     data[i] = c * f
   end
+end
+
+function interpolate(nVars, coords, oct)
+  nPoints = size(coords, 2)
+  data = zeros(Float64, nVars)
+  myPoint = zeros(Float64, 3)
+  result = zeros(Float64, nVars, nPoints)
+  norms = Float64[]
+  for i=1:nPoints
+    for k=1:3
+      myPoint[k] = coords[k,i]
+    end
+
+    didFindCell, myCell = cell_containing_point(oct, myPoint)
+    if (didFindCell == true)
+      triLinearInterpolation!(myCell, myPoint, data, 0.0, 0.0, 0.0)
+    end
+
+    for j=1:nVars
+      result[j,i] = data[j]
+      data[j] = 0.0
+    end
+  end
+  return result
 end

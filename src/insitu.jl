@@ -3,77 +3,27 @@ include("io.jl")
 include("case_picking.jl")
 include("octree.jl")
 
-type Run
-  case::AbstractString
-  species::AbstractString
-  nVars::Int
-  variables::Vector{AbstractString}
-  date::Vector{DateTime}
-  r_SC::Vector{Float64}
-  data::Vector{Float64}
-  delta_lat::Vector{Float64}
-  delta_lon::Vector{Float64}
-end
 
-function run_index(runs, caseName)
-  for i=1:length(runs)
-    if caseName == runs[i].case
-      return i
-    end
-  end
-  return -1
-end
-
-tt = DateTime[]
-
-if length(ARGS) == 3
-  t = DateTime(ARGS[1])
-  tStop = DateTime(ARGS[2])
-  dt = Dates.Second(parse(Int,ARGS[3]))
-  while t < tStop
-    push!(tt, t)
-    t += dt
-  end
-elseif length(ARGS) == 1
-  fileName = ARGS[1]
-  fid = open(fileName, "r")
-  while !eof(fid)
-    try
-      tStr = readline(fid)
-      push!(tt, DateTime(tStr))
-    catch
-      println(" - Could not recognize date format of: ", tStr)
-      println(" - Please use format such as: 2015-04-25T00:00:00")
-      close(fid)
-      exit()
-    end
-  end
-  close(fid)
-else
-  println(" - Must provide either 1 or 3 arguments when starting script.")
-  exit()
-end
-
-
-
+# construct array of time instances where data will be calculated.
+tt = time_period(ARGS)
 
 const species = split(parseUserFile("species:"), ',')
 const nSpecies = length(species)
-
 global const clib = parseUserFile("clibFile:")
-
-@show(species)
-
 metaFile = parseUserFile("kernelFile:")
 furnsh(metaFile)
-
 const dataDir = parseUserFile("dataDir:")
+
 
 runs = Run[]
 df_runs = build_df(dataDir)
 
 
-#while t < tStop
+# for each time step calculate position of the Sun and pick the best fitting
+# dsmc case for that position. Then compute coordinates of the Rosetta and assign
+# those coordinates to the selected Run. This way all coordinates are sorted
+# to the corresponding Runs. A run is a specific simulation result from AMPS
+# (one output file from AMPS = a Run)
 for t in tt
   et = str2et(string(t))
 
@@ -84,15 +34,15 @@ for t in tt
   end
 
   for sp in species
-    myCase, dlat, dlon = select_data_file(df_runs, et, sp)
-    iRun = run_index(runs, myCase)
+    myRun, dlat, dlon = select_data_file(df_runs, et, sp)
+    iRun = run_index(runs, myRun)
     if iRun > 0
       push!(runs[iRun].date, t)
       push!(runs[iRun].delta_lat, dlat)
       push!(runs[iRun].delta_lon, dlon)
       append!(runs[iRun].r_SC, r_SC)
     elseif iRun == -1
-      push!(runs, Run(myCase, sp, 0, AbstractString[], DateTime[t], copy(r_SC), Float64[], Float64[dlat], Float64[dlon]))
+      push!(runs, Run(myRun, sp, 0, AbstractString[], DateTime[t], copy(r_SC), Float64[], Float64[dlat], Float64[dlon]))
     end
   end
 end
@@ -125,6 +75,5 @@ for run in runs
   end
   rundata = reshape(run.data, (nVars,nPoints))
 end
-
 
 save_insitu_results(runs, species)

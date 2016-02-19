@@ -1,5 +1,26 @@
 using Spice
 
+type Run
+  case::AbstractString
+  species::AbstractString
+  nVars::Int
+  variables::Vector{AbstractString}
+  date::Vector{DateTime}
+  r_SC::Vector{Float64}
+  data::Vector{Float64}
+  delta_lat::Vector{Float64}
+  delta_lon::Vector{Float64}
+end
+
+function run_index(runs, caseName)
+  for i=1:length(runs)
+    if caseName == runs[i].case
+      return i
+    end
+  end
+  return -1
+end
+
 function timeFromFileName(fileName)
   f = basename(fileName)
   dateStr = matchall(r"(\d{8})", f)[1]

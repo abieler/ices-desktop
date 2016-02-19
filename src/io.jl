@@ -559,3 +559,76 @@ function save_insitu_results(runs, species)
     write_to_disk(reshape_insitu_data(runs, sp), sp)
   end
 end
+
+function save_interpolation_results(nVars, result, coords, fileName="interp_output.dat")
+  nPoints = size(result, 2)
+  oFile = open(fileName, "w")
+  for i=1:nPoints
+    for k=1:3
+      @printf(oFile, "%.9e ", coords[k,i])
+    end
+    for k=1:nVars
+      @printf(oFile, "%.5e ", result[k,i])
+    end
+    @printf(oFile, "\n")
+  end
+end
+
+function interpolate(nVars, coords, oct)
+  nPoints = size(coords, 2)
+  data = zeros(Float64, nVars)
+  myPoint = zeros(Float64, 3)
+  result = zeros(Float64, nVars, nPoints)
+  norms = Float64[]
+  for i=1:nPoints
+    for k=1:3
+      myPoint[k] = coords[k,i]
+    end
+
+    didFindCell, myCell = cell_containing_point(oct, myPoint)
+    if (didFindCell == true)
+      triLinearInterpolation!(myCell, myPoint, data, 0.0, 0.0, 0.0)
+    end
+
+    for j=1:nVars
+      result[j,i] = data[j]
+      data[j] = 0.0
+    end
+  end
+  return result
+end
+
+
+function time_period(ARGS)
+  tt = DateTime[]
+
+  if length(ARGS) == 3
+    t = DateTime(ARGS[1])
+    tStop = DateTime(ARGS[2])
+    dt = Dates.Second(parse(Int,ARGS[3]))
+    while t < tStop
+      push!(tt, t)
+      t += dt
+    end
+  elseif length(ARGS) == 1
+    fileName = ARGS[1]
+    fid = open(fileName, "r")
+    while !eof(fid)
+      try
+        tStr = readline(fid)
+        push!(tt, DateTime(tStr))
+      catch
+        println(" - Could not recognize date format of: ", tStr)
+        println(" - Please use format such as: 2015-04-25T00:00:00")
+        close(fid)
+        exit()
+      end
+    end
+    close(fid)
+  else
+    println(" - Must provide either 1 or 3 arguments when starting script.")
+    exit()
+  end
+
+  return tt
+end
