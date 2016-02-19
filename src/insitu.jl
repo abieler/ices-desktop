@@ -11,6 +11,8 @@ type Run
   date::Vector{DateTime}
   r_SC::Vector{Float64}
   data::Vector{Float64}
+  delta_lat::Vector{Float64}
+  delta_lon::Vector{Float64}
 end
 
 function run_index(runs, caseName)
@@ -22,10 +24,38 @@ function run_index(runs, caseName)
   return -1
 end
 
+tt = DateTime[]
 
-t = DateTime(ARGS[1])
-tStop = DateTime(ARGS[2])
-dt = Dates.Second(parse(Int,ARGS[3]))
+if length(ARGS) == 3
+  t = DateTime(ARGS[1])
+  tStop = DateTime(ARGS[2])
+  dt = Dates.Second(parse(Int,ARGS[3]))
+  while t < tStop
+    push!(tt, t)
+    t += dt
+  end
+elseif length(ARGS) == 1
+  fileName = ARGS[1]
+  fid = open(fileName, "r")
+  while !eof(fid)
+    try
+      tStr = readline(fid)
+      push!(tt, DateTime(tStr))
+    catch
+      println(" - Could not recognize date format of: ", tStr)
+      println(" - Please use format such as: 2015-04-25T00:00:00")
+      close(fid)
+      exit()
+    end
+  end
+  close(fid)
+else
+  println(" - Must provide either 1 or 3 arguments when starting script.")
+  exit()
+end
+
+
+
 
 const species = split(parseUserFile("species:"), ',')
 const nSpecies = length(species)
@@ -42,7 +72,9 @@ const dataDir = parseUserFile("dataDir:")
 runs = Run[]
 df_runs = build_df(dataDir)
 
-while t < tStop
+
+#while t < tStop
+for t in tt
   et = str2et(string(t))
 
   # get SC position and transform from km to m
@@ -52,16 +84,17 @@ while t < tStop
   end
 
   for sp in species
-    myCase = select_data_file(df_runs, et, sp)
+    myCase, dlat, dlon = select_data_file(df_runs, et, sp)
     iRun = run_index(runs, myCase)
     if iRun > 0
       push!(runs[iRun].date, t)
+      push!(runs[iRun].delta_lat, dlat)
+      push!(runs[iRun].delta_lon, dlon)
       append!(runs[iRun].r_SC, r_SC)
     elseif iRun == -1
-      push!(runs, Run(myCase, sp, 0, AbstractString[], DateTime[t], copy(r_SC), Float64[]))
+      push!(runs, Run(myCase, sp, 0, AbstractString[], DateTime[t], copy(r_SC), Float64[], Float64[dlat], Float64[dlon]))
     end
   end
-  t += dt
 end
 
 samplePoint = zeros(Float64, 3)
@@ -93,41 +126,5 @@ for run in runs
   rundata = reshape(run.data, (nVars,nPoints))
 end
 
-for sp in species
-  firstFound = false
-  nVars = 0
-  varNames = AbstractString[]
-  for i in 1:length(runs)
-    if (runs[i].species == sp)
-      if firstFound == false
-        alldata = reshape(runs[i].data, (runs[i].nVars, length(runs[i].date)))
-        alldates = runs[i].date
-        nVars = runs[i].nVars
-        varNames = runs[i].variables
-        firstFound = true
-      else
-        alldata = hcat(alldata, reshape(runs[i].data, (runs[i].nVars, length(runs[i].date))))
-        append!(alldates, runs[i].date)
-      end
-    end
-  end
 
-  sortIndex = sortperm(alldates)
-  alldates = alldates[sortIndex]
-  alldata = alldata[:,sortIndex]
-
-  fid = open("result_" * sp * ".dat", "w")
-  write(fid, "date,")
-  for i=1:nVars-1
-    write(fid, varNames[i], ",")
-  end
-  write(fid, varNames[end], "\n")
-  for i=1:length(alldates)
-    write(fid, string(alldates[i]), ",")
-    for k=1:nVars-1
-      write(fid, string(alldata[k,i]), ",")
-    end
-    write(fid, string(alldata[nVars,i]), "\n")
-  end
-  close(fid)
-end
+save_insitu_results(runs, species)

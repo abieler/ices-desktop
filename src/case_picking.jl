@@ -72,16 +72,19 @@ function pick_dsmc_case(df, et, species, verbose=true)
   sort!(df, cols=[:diff_lat, :diff_lon])
 
   dfNew = df[df[:species] .== species, :]
-  selected_case = dfNew[1,:file_name]
+
+  selected_case::AbstractString = dfNew[1,:file_name]
+  delta_lon::Float64 = dfNew[1,:diff_lon]
+  delta_lat::Float64 = dfNew[1,:diff_lat]
 
   if verbose
     @show(llat)
     @show(llon)
     println(" - Case selected          : ", selected_case)
-    println(" - difference in latitude : ", dfNew[1,:diff_lat])
-    println(" - difference in longitude: ", dfNew[1,:diff_lon])
+    println(" - difference in latitude : ", delta_lat)
+    println(" - difference in longitude: ", delta_lon)
   end
-  return selected_case
+  return selected_case, delta_lat, delta_lon
 end
 
 function select_data_file(et)
@@ -99,7 +102,7 @@ function select_data_file(et)
       exit()
     end
     df = build_df(dataDir)
-    myCase = pick_dsmc_case(df, et, species, false)
+    myCase, dlat, dlon = pick_dsmc_case(df, et, species, false)
     myCase = joinpath(dataDir, myCase)
   else
     myCase = parseUserFile("dataFile:")
@@ -109,7 +112,7 @@ end
 
 function select_data_file(df, et, species)
   dataDir = parseUserFile("dataDir:")
-  myCase = pick_dsmc_case(df, et, species, false)
+  myCase, dlat, dlon = pick_dsmc_case(df, et, species, false)
   myCase = joinpath(dataDir, myCase)
-  return myCase
+  return myCase, dlat, dlon
 end

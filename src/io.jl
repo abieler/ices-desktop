@@ -501,3 +501,61 @@ function AUfromFileName(fileName)
   f = basename(fileName)
   parse(Float64, matchall(r"(\d+\.\d+)", f)[1])
 end
+
+function reshape_insitu_data(runs, sp)
+    firstFound = false
+    nVars = 0
+    varNames = AbstractString[]
+    for i in 1:length(runs)
+      if (runs[i].species == sp)
+        if firstFound == false
+          alldata = reshape(runs[i].data, (runs[i].nVars, length(runs[i].date)))
+          alldates = runs[i].date
+          alldlats = runs[i].delta_lat
+          alldlons = runs[i].delta_lon
+          nVars = runs[i].nVars
+          varNames = runs[i].variables
+          firstFound = true
+        else
+          alldata = hcat(alldata, reshape(runs[i].data, (runs[i].nVars, length(runs[i].date))))
+          append!(alldlats, runs[i].delta_lat)
+          append!(alldlons, runs[i].delta_lon)
+          append!(alldates, runs[i].date)
+        end
+      end
+    end
+
+    sortIndex = sortperm(alldates)
+    alldates = alldates[sortIndex]
+    alldata = alldata[:,sortIndex]
+    alldlats = alldlats[sortIndex]
+    alldlons = alldlons[sortIndex]
+
+    return alldates, alldata, alldlats, alldlons, nVars, varNames
+
+end
+
+function write_to_disk(dd, sp)
+  alldates, alldata, alldlats, alldlons, nVars, varNames = dd
+  fid = open("result_" * sp * ".dat", "w")
+  write(fid, "date,")
+  for i=1:nVars
+    write(fid, varNames[i], ",")
+  end
+  write(fid, "delta_lat,delta_lon\n")
+  for i=1:length(alldates)
+    write(fid, string(alldates[i]), ",")
+    for k=1:nVars
+      write(fid, string(alldata[k,i]), ",")
+    end
+    write(fid, string(alldlats[i]), ",")
+    write(fid, string(alldlons[i]), "\n")
+  end
+  close(fid)
+end
+
+function save_insitu_results(runs, species)
+  for sp in species
+    write_to_disk(reshape_insitu_data(runs, sp), sp)
+  end
+end
