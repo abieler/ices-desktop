@@ -97,8 +97,14 @@ Ices-Desktop
 --------------------------------------------------------------------------------
 RUNNING
 =======
+There are three different scripts that can be run.
+######LOS.jl
+This performs line of sight integration at user defined times. Rosetta instruments are already pre definded
+with the correct number of pixels and field of views. Additionally you can define your own 'instrument' in
+the Instrument.jl file. You simply have to define the number of pixels in x and y direction and the corresponding
+filed of view angles.
 
-you have to run the main.jl script from within the src directory.
+You have to run the LOS.jl script from within the src directory with two arguments, 'date' and 'Instrument':
 ```
 julia main.jl date instrument
 ```
@@ -132,6 +138,17 @@ so a full command will look like:
 ```
 julia main.jl 2014-12-24T00:00:00 ALICE
 ```
+
+To define the DSMC output that is used for this calculation you can set the parameter
+'dataFile:' in the .userSettings.conf file. At runtime this file will be loaded and used
+for the line of sight calculations.
+
+Additionally you can also provide the keyword 'dataDir:' in .userSettings.conf. In this case
+this is the full path to a directory containing multiple AMPS output files. The script will then
+automatically load the best choice for the user defined time.
+
+
+
 --------------------------------------------------------------------------------
 CONFIGURATION
 =============
