@@ -513,6 +513,7 @@ function reshape_insitu_data(runs, sp)
           alldates = runs[i].date
           alldlats = runs[i].delta_lat
           alldlons = runs[i].delta_lon
+          allrunnames = AbstractString[basename(runs[i].case) for k=1:length(runs[i].date)]
           nVars = runs[i].nVars
           varNames = runs[i].variables
           firstFound = true
@@ -521,6 +522,8 @@ function reshape_insitu_data(runs, sp)
           append!(alldlats, runs[i].delta_lat)
           append!(alldlons, runs[i].delta_lon)
           append!(alldates, runs[i].date)
+          append!(allrunnames, AbstractString[basename(runs[i].case) for k=1:length(runs[i].date)])
+
         end
       end
     end
@@ -530,21 +533,25 @@ function reshape_insitu_data(runs, sp)
     alldata = alldata[:,sortIndex]
     alldlats = alldlats[sortIndex]
     alldlons = alldlons[sortIndex]
+    allrunnames = allrunnames[sortIndex]
 
-    return alldates, alldata, alldlats, alldlons, nVars, varNames
+    return alldates, alldata, alldlats, alldlons, nVars, varNames, allrunnames
 
 end
 
 function write_to_disk(dd, sp)
-  alldates, alldata, alldlats, alldlons, nVars, varNames = dd
-  fid = open("result_" * sp * ".dat", "w")
-  write(fid, "date,")
+  alldates, alldata, alldlats, alldlons, nVars, varNames, allrunnames = dd
+  outputDir = joinpath(parseUserFile("workingDir:"), "output")
+  fileName = "result_" * sp * ".dat"
+  fid = open(joinpath(outputDir, fileName), "w")
+  write(fid, "date,run_name,")
   for i=1:nVars
     write(fid, varNames[i], ",")
   end
   write(fid, "delta_lat,delta_lon\n")
   for i=1:length(alldates)
     write(fid, string(alldates[i]), ",")
+    write(fid, allrunnames[i], ",")
     for k=1:nVars
       write(fid, string(alldata[k,i]), ",")
     end
@@ -561,6 +568,7 @@ function save_insitu_results(runs, species)
 end
 
 function save_interpolation_results(nVars, result, coords, fileName="interp_output.dat")
+  fileName = joinpath(parseUserFile("workingDir:"), "output", basename(fileName))
   nPoints = size(result, 2)
   oFile = open(fileName, "w")
   for i=1:nPoints
@@ -600,6 +608,12 @@ end
 
 
 function time_period(ARGS)
+
+  secs = ["s", "sec", "second", "seconds"]
+  mins = ["min", "minute", "minutes"]
+  hrs = ["h", "hour", "hours"]
+  days = ["d", "day", "days"]
+
   tt = DateTime[]
 
   if length(ARGS) == 3
@@ -610,6 +624,31 @@ function time_period(ARGS)
       push!(tt, t)
       t += dt
     end
+  elseif length(ARGS) == 4
+    t = DateTime(ARGS[1])
+    tStop = DateTime(ARGS[2])
+    t_unit = lowercase(ARGS[4])
+    if any(t_unit .== secs)
+      dt = Dates.Second(parse(Int, ARGS[3]))
+    elseif any(t_unit .== mins)
+      dt = Dates.Minute(parse(Int, ARGS[3]))
+    elseif any(t_unit .== hrs)
+      dt = Dates.Hour(parse(Int, ARGS[3]))
+    elseif any(t_unit .== days)
+      dt = Dates.Day(parse(Int, ARGS[3]))
+    else
+      println(" -  Did not find time unit use one of the following:")
+      println(secs)
+      println(mins)
+      println(hrs)
+      println(days)
+      exit()
+    end
+    while t < tStop
+      push!(tt, t)
+      t += dt
+    end
+
   elseif length(ARGS) == 1
     fileName = ARGS[1]
     fid = open(fileName, "r")
