@@ -473,7 +473,7 @@ cacert=/etc/ssl/certs/ca-certificates.crt
 into 
 
 ```
-~/.curlrc fixed the problem!
+~/.curlrc
 ```
 
-has helped.
+has helped under Ubuntu.
