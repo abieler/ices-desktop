@@ -40,7 +40,7 @@ else
   rotMat = eye(3)
 end
 
-const fileName = select_data_file(et)
+const fileName = select_data_file(et, etStr)
 @show(fileName)
 const meshFile = parseUserFile("meshFile:")
 const doCheckShadow = parseUserFile("doCheckShadow:")
@@ -101,7 +101,7 @@ println(" - performing LOS calculations, please wait...")
 @time ccd, mask = doIntegration(oct, rPointing, rStart, nVars, allTriangles,
                           doCheckShadow_bool, fileName)
 
-save_result(ccd, mask, nVars, nPixelsX, nPixelsY, etStr)
+save_result(ccd, mask, nVars, varNames, nPixelsX, nPixelsY, etStr)
 if false
     try
       plot_result(ccd, mask, nVars, nPixelsX, nPixelsY)

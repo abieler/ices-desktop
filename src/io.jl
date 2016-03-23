@@ -1,7 +1,7 @@
 using Triangles
 using DataFrames
 
-function save_result(ccd, mask, nVars, nPixelsX, nPixelsY, etStr)
+function save_result(ccd, mask, nVars, varNames, nPixelsX, nPixelsY, etStr)
     prevDir = pwd()
     wrkDir = parseUserFile("workingDir:")
     cd(joinpath(wrkDir, "output"))

@@ -34,7 +34,7 @@ for t in tt
   end
 
   for sp in species
-    myRun, dlat, dlon = select_data_file(df_runs, et, sp)
+    myRun, dlat, dlon = select_data_file(df_runs, et, string(t), sp)
     iRun = run_index(runs, myRun)
     if iRun > 0
       push!(runs[iRun].date, t)
