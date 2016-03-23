@@ -239,7 +239,7 @@ second one ignored.
 Here the mandatory keyWords that have to be specified for each of the above scrips. Some of those are set to 
 default values during the installation.
 
-#####LOS.jl
+###LOS.jl
 `workingDir:` directory where input files and the output of the calculations are stored (set at install time to 
 ices-desktop/work).
 
@@ -267,7 +267,7 @@ This will select the right DSMC file according to heliocentric distance, solar l
 This is the recommended way of using the LOS.jl script.
 
 
-#####insitu.jl
+###insitu.jl
 `workingDir:` directory where input files and the output of the calculations are stored (set at install time to 
 ices-desktop/work).
 
@@ -284,7 +284,7 @@ are actually done in the DSMC case). For insitu.jl you can also specify more tha
 Note that insitu.jl only accepts `dataDir:` and not `dataFile:` as parameter.
 
 
-#####interpolate_coords.jl
+###interpolate_coords.jl
 `workingDir:` directory where input files and the output of the calculations are stored (set at install time to 
 ices-desktop/work).
 
