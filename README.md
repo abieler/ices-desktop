@@ -21,7 +21,11 @@ Julia
 
      where x.x.x is your version of the Julia install.
      
-     For "El Capitan" users that does not work anymore as not even root is allowed to write to /usr/bin/. In that case
+     For "El Capitan" users that does not work anymore as not even root is allowed to write to /usr/bin/. In that case          either create an alias to start the julia executable or add
+     ```
+     "/Applications/Julia-0.4.1.app/Contents/Resources/julia/bin/"
+     ```
+     to PATH.
 
      **Linux users**: If you installed via package manager or similar, no further steps are required.
      Otherwise modify your PATH variable accordingly.
