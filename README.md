@@ -302,6 +302,9 @@ The user coordinates have to be defined in meters and in the comet nucleus fixed
 
 List of Keywords:
 ----------------
+Todo: quick description of each keyword.
+
+
 `clibFile:` 
 
 `kernelFile:`
