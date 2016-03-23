@@ -1,11 +1,11 @@
 INSTALLATION
 ============
-Only 64 bit machines with Linux or OSX are supported.
+Disclaimer: Only 64 bit machines with Linux or OSX are supported.
 
 Julia
 ------
 
-  1. install julia version >= 0.4 via you OS package manager or else you can find binaries at the link below:
+  1. install julia version >= 0.4 from your OS's package manager or else you can find binaries under the link below:
   
      http://julialang.org/downloads/
 
