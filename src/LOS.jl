@@ -101,10 +101,12 @@ println(" - performing LOS calculations, please wait...")
 @time ccd, mask = doIntegration(oct, rPointing, rStart, nVars, allTriangles,
                           doCheckShadow_bool, fileName)
 
-save_result(ccd, mask, nVars, nPixelsX, nPixelsY)
-try
-  plot_result(ccd, mask, nVars, nPixelsX, nPixelsY)
-catch
+save_result(ccd, mask, nVars, nPixelsX, nPixelsY, etStr)
+if false
+    try
+      plot_result(ccd, mask, nVars, nPixelsX, nPixelsY)
+    catch
+    end
 end
 wrkDir = parseUserFile("workingDir:")
 cd(joinpath(wrkDir, "output"))

@@ -1,7 +1,7 @@
 using Triangles
 using DataFrames
 
-function save_result(ccd, mask, nVars, nPixelsX, nPixelsY)
+function save_result(ccd, mask, nVars, nPixelsX, nPixelsY, etStr)
     prevDir = pwd()
     wrkDir = parseUserFile("workingDir:")
     cd(joinpath(wrkDir, "output"))
@@ -19,7 +19,7 @@ function save_result(ccd, mask, nVars, nPixelsX, nPixelsY)
            ccd_sum[ix, iy] += ccdPlt[ix, iy]
          end
        end
-      writedlm("ccd_" * varNames[i] * ".dat", ccdPlt)
+      writedlm("ccd_" * varNames[i] * "_" * etStr * ".dat", ccdPlt)
     end
     cd(prevDir)
 end
