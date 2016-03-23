@@ -101,7 +101,10 @@ Ices-Desktop
 --------------------------------------------------------------------------------
 RUNNING
 =======
-There are three different scripts that can be run.
+There are three different scripts that can be run. Please read the section `CONFIGURATION` before try running
+any of those scripts for the first time.
+
+
 ###LOS.jl
 This performs line of sight integration at user defined times. Rosetta instruments are already pre definded
 with the correct number of pixels and field of views. Additionally you can define your own 'instrument' in
@@ -211,27 +214,49 @@ When providing only 'dataDir:', you also need to define the keyword 'species:' i
 This is also true if there is only data from one specific species.
 
 
-
 --------------------------------------------------------------------------------
 CONFIGURATION
 =============
-You can configure the settings of the ices-desktop runs from within the `.userSettings.conf` file.
-This file stores information on which spice kernels to load, which dsmc output files to load and so forth.
-The `.userSettings.conf` file is just a stack of
-"keyWord:parameter"
-pairs.
+You can configure all settings of the ices-desktop runs from within the `.userSettings.conf` file.
+This file stores information on which `spice kernels` to load, which `DSMC files` to load, what gas species you
+want to use and much more. During run time of any of the scripts described above, this file is parsed for
+different keywords to get the necessary information.
 
-During runtime this ascii file is parsed for those keywords.
-(Actually for "keyWord:")
+The format of the `.userSettings.conf` file is just a stack of
+`keyWord:parameter`
+pairs.
 
 The order of the keyword stack is not important and there is a list of all keywords that can be used at
 the bottom of this paragraph.
 
-You can add your own text for commenting and such, just be sure to not use any
-of the keywords in that text.
+You can add your own text for comments and such, just be sure to not use any
+of the keywords from the list below.
 
-If you have one keyWord doubly defined, the first one will be parsed and the
+If you have one `keyWord` doubly defined, the first one will be parsed and the
 second one ignored.
+
+Here the mandatory keyWords that have to be specified for each of the above scrips. Some of those are set to 
+default values during the installation.
+
+#####LOS.jl
+`workingDir:` directory where input files and the output of the calculations are stored (set at install time to 
+ices-desktop/work).
+
+`spicelib:` full path to the spice library (set at install time)
+
+`kernelFile:` full path to the metafile containing all necessary spice kernels. (set at install time)
+
+`meshFile:` full path to the shape model of 67P. (set at install time)
+
+`dataFile:` full path to the DSMC output file which is to be used for the calculation (set at install time)
+
+`species:` your choice of species to be used for the calculation. Valid choices are H2O, CO2 or CO (or whatever species
+are actually done in the DSMC case)
+
+
+
+
+
 
 You can edit this file with any text editor or via the Config.jl file.
 The general use is to call:
