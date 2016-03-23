@@ -230,7 +230,8 @@ The order of the keyword stack is not important and there is a list of all keywo
 the bottom of this paragraph.
 
 You can add your own text for comments and such, just be sure to not use any
-of the keywords from the list below.
+of the keywords from the list below. To modify the .userSettings.conf file you can use any text editor
+you like.
 
 If you have one `keyWord` doubly defined, the first one will be parsed and the
 second one ignored.
@@ -250,11 +251,52 @@ ices-desktop/work).
 
 `dataFile:` full path to the DSMC output file which is to be used for the calculation (set at install time)
 
+`dataDir:` full path to a directory with multiple DSMC output files. See comments below to see difference between dataDir
+and DataFile.
+
 `species:` your choice of species to be used for the calculation. Valid choices are H2O, CO2 or CO (or whatever species
 are actually done in the DSMC case)
 
 
+The line of sight calculation is performed for one specific date and time. If you know exactly which DSMC file you need
+for this calculation you can specify this with the `dataFile:` keyword. However, you have to be sure to select a DSMC case
+that is representative of the illumination conditions for your specific date and time.
+To make things easier you can also define `dataDir:` in the .userSettings.conf file. In this directory you can have a full
+set of DSMC output files, the LOS.jl script will automatically figure out which of those cases (including the species) is most suitable for that specific date.
+This will select the right DSMC file according to heliocentric distance, solar longitude and solar latidude.
+This is the recommended way of using the LOS.jl script.
 
+
+#####insitu.jl
+`workingDir:` directory where input files and the output of the calculations are stored (set at install time to 
+ices-desktop/work).
+
+`spicelib:` full path to the spice library (set at install time)
+
+`kernelFile:` full path to the metafile containing all necessary spice kernels. (set at install time)
+
+`dataDir:` full path to a directory with multiple DSMC output files. See comments below to see difference between dataDir
+and DataFile.
+
+`species:` your choice of species to be used for the calculation. Valid choices are H2O, CO2 or CO (or whatever species
+are actually done in the DSMC case). For insitu.jl you can also specify more than one species by having a comma separated list of arguments such as: `species:H2O,CO2,CO`.
+
+Note that insitu.jl only accepts `dataDir:` and not `dataFile:` as parameter.
+
+
+#####interpolate_coords.jl
+`workingDir:` directory where input files and the output of the calculations are stored (set at install time to 
+ices-desktop/work).
+
+`spicelib:` full path to the spice library (set at install time)
+
+`kernelFile:` full path to the metafile containing all necessary spice kernels. (set at install time)
+
+`dataFile:` full path to a directory with multiple DSMC output files. 
+
+Note that interpolate_coords.jl only accepts `dataFile:` and not `dataDir:` as parameter. As there is no specified date
+and time to when to extract the variables the exact DSMC file has to be specified.
+The user coordinates have to be defined in meters and in the comet nucleus fixed reference frame. (Osiris reference frame)
 
 
 
