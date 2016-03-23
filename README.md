@@ -58,7 +58,7 @@ Git
 
 Ices-Desktop
 ------------
-  1. You can either download the ices-desktop tool by clicking the "Download ZIP" button on this page, or
+  1. Either download the ices-desktop tool by clicking the "Download ZIP" button on this page, or
      install it via git.
     
      If you choose the "Download ZIP" way, extract the archive on your hard drive and rename the
@@ -102,15 +102,15 @@ Ices-Desktop
 RUNNING
 =======
 There are three different scripts that can be run.
-#####LOS.jl
+###LOS.jl
 This performs line of sight integration at user defined times. Rosetta instruments are already pre definded
 with the correct number of pixels and field of views. Additionally you can define your own 'instrument' in
 the Instrument.jl file. You simply have to define the number of pixels in x and y direction and the corresponding
 filed of view angles.
 
-You have to run the LOS.jl script from within the src directory with two arguments, 'date' and 'Instrument':
+Run the LOS.jl script from within the src directory with two arguments, 'date' and 'Instrument':
 ```
-julia main.jl date instrument
+julia LOS.jl date instrument
 ```
 
 Where `date` is the UTC datetime of the observation to be calculated in the
@@ -140,8 +140,63 @@ TEST
 so a full command will look like:
 
 ```
-julia main.jl 2014-12-24T00:00:00 ALICE
+julia LOS.jl 2014-12-24T00:00:00 ALICE
 ```
+
+###insitu.jl
+
+This script computes values of different variables (such as number density) at the location of the
+Rosetta spacecraft. To start this script do:
+
+```
+julia insitu.jl tStart tStop dt [t_unit]
+```
+
+With `tStart` and `tStop` are UTC times in the format yyyy-mm-ddTHH:MM:SS and `dt` is an integer number
+for the step width between two data points. An optional `t_unit` argument can be given to specify the unit
+of `dt`. This unit can be seconds, minutes, hours or days. If no unit is provided, seconds are assumed. 
+
+#####Use any of the following valid keywords to specify a unit:
+```
+s sec second seconds
+min minute minutes
+h hour hours
+d day days
+```
+
+So
+```
+julia insitu.jl 2015-08-01T00:00:00 2015-09-01T00:00:00 1 day
+```
+extracts data between August 1st 2015 and September 1st 2015 for every day at 00:00:00 hour.
+Any of the following:
+```
+julia insitu.jl 2015-08-01T00:00:00 2015-09-01T00:00:00 10 m
+julia insitu.jl 2015-08-01T00:00:00 2015-09-01T00:00:00 10 min
+julia insitu.jl 2015-08-01T00:00:00 2015-09-01T00:00:00 10 minutes
+```
+does the same thing with a 10 minute resolution. You get the idea..
+The results will be saved under `ices-desktop/work/output/`.
+
+
+###interpolate-coords.jl
+
+This script computes values of different variables at user defined coordinates.
+The only input argument is the full path to the file containing the user coordinates.
+This file must be in ASCII and contain nothing but the user specified coordinates
+in a comma separated way.
+
+The following is a valid format for the coordinate file:
+```
+0.0,1e-5,1001.2
+0.0,0.0,100
+100,100,100
+```
+
+Results are saved in `ices-desktop/work/output/`.
+
+
+
 
 To define which DSMC data is used for this calculation you can set the parameter
 'dataFile:' in the .userSettings.conf file. At runtime this file will be loaded and used
