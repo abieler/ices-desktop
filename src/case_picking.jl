@@ -163,7 +163,7 @@ end
 
 function select_data_file(df, et, etStr, species)
   dataDir = parseUserFile("dataDir:")
-  myCase, dlat, dlon = pick_dsmc_case(df, et, etStr, species, true)
+  myCase, dlat, dlon = pick_dsmc_case(df, et, etStr, species, false)
   myCase = joinpath(dataDir, myCase)
   return myCase, dlat, dlon
 end

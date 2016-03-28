@@ -55,7 +55,10 @@ for run in runs
   data = zeros(Float64, nVars)
   nPoints = length(run.date)
   @show(run.case)
-  @show(varNames)
+  println("Variables in simulation:")
+  for var in varNames
+    @show(var)
+  end
   @show(nPoints)
   println()
   coords = reshape(run.r_SC, (3,nPoints))
