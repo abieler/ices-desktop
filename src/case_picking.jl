@@ -124,7 +124,7 @@ function pick_dsmc_case(df::DataFrame, et, etStr, species, verbose=true)
   selected_case::AbstractString = dfNew[1,:file_name]
   delta_lon::Float64 = dfNew[1,:diff_lon]
   delta_lat::Float64 = dfNew[1,:diff_lat]
-  delta_days::Float64 = dfNew[1,:diff_date] / 60. / 60. / 24.0/ 1000.0
+  delta_days::Float64 = dfNew[1,:diff_date] / 60. / 60. / 24.0 / 1000.0
 
   if verbose
     @show(llat)
