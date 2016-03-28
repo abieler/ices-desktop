@@ -104,14 +104,27 @@ function pick_dsmc_case(df::DataFrame, et, etStr, species, verbose=true)
 
   df[:diff_lon] = abs((((df[:lon] .- llon) + 180) % 360) - 180)
   df[:diff_lat] = abs((((df[:lat] .- llat) + 180) % 360) - 180)
-  sort!(df, cols=[:diff_lat, :diff_lon])
+  diff_date = Array(Int, size(df,1))
+  for i in 1:size(df,1)
+    diff_date[i] = abs((df[i,:date] - t).value)
+  end
+  df[:diff_date] = diff_date
+
+
+
+  # new sorting: first chose closest date, than by longitude
+  sort!(df, cols=[:diff_date, :diff_lon])
+
+  # old sort: first by solar latitude, than by longitude
+  #sort!(df, cols=[:diff_lat, :diff_lon])
 
   dfNew = df[df[:species] .== species, :]
-  dfNew = dfNew[dfNew[:isInbound] .== isInbound, :]
+  #dfNew = dfNew[dfNew[:isInbound] .== isInbound, :]
 
   selected_case::AbstractString = dfNew[1,:file_name]
   delta_lon::Float64 = dfNew[1,:diff_lon]
   delta_lat::Float64 = dfNew[1,:diff_lat]
+  delta_days::Float64 = dfNew[1,:diff_date] / 60. / 60. / 24.0/ 1000.0
 
   if verbose
     @show(llat)
@@ -120,6 +133,7 @@ function pick_dsmc_case(df::DataFrame, et, etStr, species, verbose=true)
     println(" - Case selected          : ", selected_case)
     println(" - difference in latitude : ", delta_lat)
     println(" - difference in longitude: ", delta_lon)
+    println(" - difference in days     : ", delta_days)
   end
   return selected_case, delta_lat, delta_lon
 end
