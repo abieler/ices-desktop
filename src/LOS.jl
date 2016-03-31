@@ -31,7 +31,9 @@ if length(ARGS) == 2
   nPixelsY = instrument.nPixelsY
   phiX = instrument.phiX
   phiY = instrument.phiY
+  println("crash")
   rotMat = pxform(instrument.frame, "67P/C-G_CK", et)
+  println("crash 2")
   rotMat = rotMat'
 else
   nPixelsX = parse(Int, ARGS[2])
