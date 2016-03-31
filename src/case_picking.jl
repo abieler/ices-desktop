@@ -42,7 +42,6 @@ end
 
 
 function build_df(dataDir)
-  @show(dataDir)
   df = DataFrame()
   fileNames = AbstractString[]
   AU = Float64[]
@@ -55,7 +54,6 @@ function build_df(dataDir)
   for name in readdir(dataDir)
     if contains(name, ".h5")
       etStr = timeFromFileName(name)
-      println("etStr from fileName:", etStr)
       t = DateTime(etStr[1:10], "yyyy-mm-dd")
       if t > DateTime(2015,8,13)
           isInbound = false
@@ -65,7 +63,6 @@ function build_df(dataDir)
       au = AUfromFileName(name)
       et = utc2et(etStr)
       sp = split(name, '.')[end-1]
-      @show(sp)
       rSUN, lt = spkpos("SUN", et, "67P/C-G_CK", "NONE", "CHURYUMOV-GERASIMENKO")
       r, llon, llat = reclat(rSUN)
       llon = llon / pi * 180.0
@@ -95,6 +92,12 @@ function build_df(dataDir)
 end
 
 function pick_dsmc_case(df::DataFrame, et, etStr, species, verbose=true)
+  println("pick_dsmc_case")
+  @show(et)
+  @show(etStr)
+  @show(species)
+  @show(size(df))
+  println()
   rSUN, lt = spkpos("SUN", et, "67P/C-G_CK", "NONE", "CHURYUMOV-GERASIMENKO")
   t = DateTime(etStr)
   isInbound = true
@@ -144,14 +147,12 @@ end
 function select_data_file(et, etStr)
   if length(parseUserFile("dataFile:")) < 1
     dataDir = parseUserFile("dataDir:")
-    @show(dataDir)
     if length(dataDir) < 1
       println("Define either dataDir: or dataFile: in '.userSettings.conf'")
       exit()
     end
 
     species = parseUserFile("species:")
-    @show(species)
     if length(species) < 1
       println(" -  NO SPECIES DEFINED! Set name of species in .userSettings.conf with the \
       keyword 'species:'")
