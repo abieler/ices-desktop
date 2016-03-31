@@ -21,8 +21,6 @@ end
 
 etStr = ARGS[1]
 et = str2et(etStr)
-@show(etStr)
-@show(et)
 
 if length(ARGS) == 2
   instrumentName = ARGS[2]
@@ -67,13 +65,9 @@ fileNameBase = basename(fileName)[1:end-(length(fileNameExtension)+1)]
 
 ################################################################################
 # load data from spice
-println("getting spice data")
 rRos_km, lt = spkpos("ROSETTA", et, "67P/C-G_CK", "NONE", "CHURYUMOV-GERASIMENKO")
 println(" - observer distance from coordinate center : ", norm(rRos_km), " km")
 rStart = rRos_km .* 1000
-println("done")
-
-@show(rROS_km)
 
 
 

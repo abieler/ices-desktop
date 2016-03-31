@@ -175,7 +175,9 @@ function parseUserFile(keyword)
  while !eof(iFile)
    line = readline(iFile)
    if contains(line, keyword)
-     value = string(bytestring(split(line, keyword)[2][1:end-1]))
+     line = replace(line, "\n", "")
+     line = replace(line, "\r", "")
+     value = string(bytestring(split(line, keyword)[2]))
      return value
    end
  end
