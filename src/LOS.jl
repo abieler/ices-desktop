@@ -21,6 +21,8 @@ end
 
 etStr = ARGS[1]
 et = str2et(etStr)
+@show(etStr)
+@show(et)
 
 if length(ARGS) == 2
   instrumentName = ARGS[2]
