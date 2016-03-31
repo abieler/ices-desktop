@@ -61,7 +61,7 @@ function build_df(dataDir)
           isInbound = true
       end
       au = AUfromFileName(name)
-      et = utc2et(etStr)
+      et = str2et(etStr)
       sp = split(name, '.')[end-1]
       rSUN, lt = spkpos("SUN", et, "67P/C-G_CK", "NONE", "CHURYUMOV-GERASIMENKO")
       r, llon, llat = reclat(rSUN)
@@ -92,12 +92,6 @@ function build_df(dataDir)
 end
 
 function pick_dsmc_case(df::DataFrame, et, etStr, species, verbose=true)
-  println("pick_dsmc_case")
-  @show(et)
-  @show(etStr)
-  @show(species)
-  @show(size(df))
-  println()
   rSUN, lt = spkpos("SUN", et, "67P/C-G_CK", "NONE", "CHURYUMOV-GERASIMENKO")
   t = DateTime(etStr)
   isInbound = true
@@ -159,7 +153,7 @@ function select_data_file(et, etStr)
       exit()
     end
     df = build_df(dataDir)
-    myCase, dlat, dlon = pick_dsmc_case(df, et, etStr, species, true)
+    myCase, dlat, dlon = pick_dsmc_case(df, et, etStr, species, false)
     myCase = joinpath(dataDir, myCase)
   else
     myCase = parseUserFile("dataFile:")
