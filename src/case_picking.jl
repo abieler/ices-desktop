@@ -84,18 +84,18 @@ end
 
 function pick_dsmc_case(df::DataFrame, et, etStr, species, verbose=true)
   rSUN, lt = spkpos("SUN", et, "67P/C-G_CK", "NONE", "CHURYUMOV-GERASIMENKO")
+  t = DateTime(etStr)
   r, llon, llat = reclat(rSUN)
   llon = llon / pi * 180.0
   llat = llat / pi * 180.0
 
-  df[:diff_lon] = abs((((df[:lon] .- llon) + 180) % 360) - 180)
-  df[:diff_lat] = abs((((df[:lat] .- llat) + 180) % 360) - 180)
+  df[:diff_lon] = abs(mod(((df[:lon] .- llon) + 180), 360) - 180)
+  df[:diff_lat] = abs(mod(((df[:lat] .- llat) + 180), 360) - 180)
   diff_date = Array(Int, size(df,1))
   for i in 1:size(df,1)
-    diff_date[i] = abs((df[i,:date] - t).value)
+    diff_date[i] = abs((df[i,:date] - t).value) / 60. / 60. / 24.0 / 1000.0
   end
   df[:diff_date] = diff_date
-
 
 
   # new sorting: first chose closest date, than by longitude
@@ -109,7 +109,7 @@ function pick_dsmc_case(df::DataFrame, et, etStr, species, verbose=true)
   selected_case::AbstractString = dfNew[1,:file_name]
   delta_lon::Float64 = dfNew[1,:diff_lon]
   delta_lat::Float64 = dfNew[1,:diff_lat]
-  delta_days::Float64 = dfNew[1,:diff_date] / 60. / 60. / 24.0 / 1000.0
+  delta_days::Float64 = dfNew[1,:diff_date]
 
   if verbose
     @show(llat)
@@ -137,7 +137,7 @@ function select_data_file(et, etStr)
       exit()
     end
     df = build_df(dataDir)
-    myCase, dlat, dlon = pick_dsmc_case(df, et, etStr, species, false)
+    myCase, dlat, dlon = pick_dsmc_case(df, et, etStr, species, true)
     myCase = joinpath(dataDir, myCase)
   else
     myCase = parseUserFile("dataFile:")

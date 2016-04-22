@@ -354,6 +354,7 @@ function doIntegration(oct::Block, rPointing, rStart, nVars, allTriangles,
         ccd[k, i] = data[k]
       end
     end
+    println()
     return ccd, mask
 end
 
