@@ -88,8 +88,8 @@ function pick_dsmc_case(df, et, species, verbose=true)
   llon = llon / pi * 180.0
   llat = llat / pi * 180.0
 
-  df[:diff_lon] = abs((((df[:lon] .- llon) + 180) % 360) - 180)
-  df[:diff_lat] = abs((((df[:lat] .- llat) + 180) % 360) - 180)
+  df[:diff_lon] = abs(mod((df[:lon] .- llon) + 180, 360) - 180)
+  df[:diff_lat] = abs(mod((df[:lat] .- llat) + 180, 360) - 180)
   sort!(df, cols=[:diff_lat, :diff_lon])
 
   dfNew = df[df[:species] .== species, :]
