@@ -3,3 +3,4 @@ spiceKernels
 .ipynb_checkpoints
 *.dat
 .userSettings.conf
+userSettings.conf
