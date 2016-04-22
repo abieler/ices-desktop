@@ -54,7 +54,7 @@ function build_df(dataDir)
       etStr = timeFromFileName(name)
       t = DateTime(etStr[1:10], "yyyy-mm-dd")
       au = AUfromFileName(name)
-      et = utc2et(etStr)
+      et = str2et(etStr)
       sp = split(name, '.')[end-1]
       rSUN, lt = spkpos("SUN", et, "67P/C-G_CK", "NONE", "CHURYUMOV-GERASIMENKO")
       r, llon, llat = reclat(rSUN)
@@ -82,21 +82,34 @@ function build_df(dataDir)
   return df
 end
 
-function pick_dsmc_case(df, et, species, verbose=true)
+function pick_dsmc_case(df::DataFrame, et, etStr, species, verbose=true)
   rSUN, lt = spkpos("SUN", et, "67P/C-G_CK", "NONE", "CHURYUMOV-GERASIMENKO")
   r, llon, llat = reclat(rSUN)
   llon = llon / pi * 180.0
   llat = llat / pi * 180.0
 
-  df[:diff_lon] = abs(mod((df[:lon] .- llon) + 180, 360) - 180)
-  df[:diff_lat] = abs(mod((df[:lat] .- llat) + 180, 360) - 180)
-  sort!(df, cols=[:diff_lat, :diff_lon])
+  df[:diff_lon] = abs((((df[:lon] .- llon) + 180) % 360) - 180)
+  df[:diff_lat] = abs((((df[:lat] .- llat) + 180) % 360) - 180)
+  diff_date = Array(Int, size(df,1))
+  for i in 1:size(df,1)
+    diff_date[i] = abs((df[i,:date] - t).value)
+  end
+  df[:diff_date] = diff_date
+
+
+
+  # new sorting: first chose closest date, than by longitude
+  sort!(df, cols=[:diff_date, :diff_lon])
+
+  # old sort: first by solar latitude, than by longitude
+  #sort!(df, cols=[:diff_lat, :diff_lon])
 
   dfNew = df[df[:species] .== species, :]
 
   selected_case::AbstractString = dfNew[1,:file_name]
   delta_lon::Float64 = dfNew[1,:diff_lon]
   delta_lat::Float64 = dfNew[1,:diff_lat]
+  delta_days::Float64 = dfNew[1,:diff_date] / 60. / 60. / 24.0 / 1000.0
 
   if verbose
     @show(llat)
@@ -104,11 +117,12 @@ function pick_dsmc_case(df, et, species, verbose=true)
     println(" - Case selected          : ", selected_case)
     println(" - difference in latitude : ", delta_lat)
     println(" - difference in longitude: ", delta_lon)
+    println(" - difference in days     : ", delta_days)
   end
   return selected_case, delta_lat, delta_lon
 end
 
-function select_data_file(et)
+function select_data_file(et, etStr)
   if length(parseUserFile("dataFile:")) < 1
     dataDir = parseUserFile("dataDir:")
     if length(dataDir) < 1
@@ -123,7 +137,7 @@ function select_data_file(et)
       exit()
     end
     df = build_df(dataDir)
-    myCase, dlat, dlon = pick_dsmc_case(df, et, species, false)
+    myCase, dlat, dlon = pick_dsmc_case(df, et, etStr, species, false)
     myCase = joinpath(dataDir, myCase)
   else
     myCase = parseUserFile("dataFile:")
@@ -131,9 +145,9 @@ function select_data_file(et)
   return myCase
 end
 
-function select_data_file(df, et, species)
+function select_data_file(df, et, etStr, species)
   dataDir = parseUserFile("dataDir:")
-  myCase, dlat, dlon = pick_dsmc_case(df, et, species, false)
+  myCase, dlat, dlon = pick_dsmc_case(df, et, etStr, species, false)
   myCase = joinpath(dataDir, myCase)
   return myCase, dlat, dlon
 end

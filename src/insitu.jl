@@ -34,7 +34,7 @@ for t in tt
   end
 
   for sp in species
-    myRun, dlat, dlon = select_data_file(df_runs, et, sp)
+    myRun, dlat, dlon = select_data_file(df_runs, et, string(t), sp)
     iRun = run_index(runs, myRun)
     if iRun > 0
       push!(runs[iRun].date, t)
@@ -55,7 +55,10 @@ for run in runs
   data = zeros(Float64, nVars)
   nPoints = length(run.date)
   @show(run.case)
-  @show(varNames)
+  println("Variables in simulation:")
+  for var in varNames
+    @show(var)
+  end
   @show(nPoints)
   println()
   coords = reshape(run.r_SC, (3,nPoints))

@@ -40,7 +40,7 @@ else
   rotMat = eye(3)
 end
 
-const fileName = select_data_file(et)
+const fileName = select_data_file(et, etStr)
 @show(fileName)
 const meshFile = parseUserFile("meshFile:")
 const doCheckShadow = parseUserFile("doCheckShadow:")
@@ -68,6 +68,8 @@ fileNameBase = basename(fileName)[1:end-(length(fileNameExtension)+1)]
 rRos_km, lt = spkpos("ROSETTA", et, "67P/C-G_CK", "NONE", "CHURYUMOV-GERASIMENKO")
 println(" - observer distance from coordinate center : ", norm(rRos_km), " km")
 rStart = rRos_km .* 1000
+
+
 
 ################################################################################
 # create pointing vectors
@@ -101,10 +103,12 @@ println(" - performing LOS calculations, please wait...")
 @time ccd, mask = doIntegration(oct, rPointing, rStart, nVars, allTriangles,
                           doCheckShadow_bool, fileName)
 
-save_result(ccd, mask, nVars, nPixelsX, nPixelsY)
-try
-  plot_result(ccd, mask, nVars, nPixelsX, nPixelsY)
-catch
+save_result(ccd, mask, nVars, varNames, nPixelsX, nPixelsY, etStr)
+if false
+    try
+      plot_result(ccd, mask, nVars, nPixelsX, nPixelsY)
+    catch
+    end
 end
 wrkDir = parseUserFile("workingDir:")
 cd(joinpath(wrkDir, "output"))
