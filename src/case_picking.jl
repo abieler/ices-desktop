@@ -92,11 +92,11 @@ function pick_dsmc_case(df::DataFrame, et, etStr, species, verbose=true)
   df[:diff_lon] = abs(mod(((df[:lon] .- llon) + 180), 360) - 180)
   df[:diff_lat] = abs(mod(((df[:lat] .- llat) + 180), 360) - 180)
   diff_date = Array(Int, size(df,1))
+
   for i in 1:size(df,1)
-    diff_date[i] = abs((df[i,:date] - t).value) / 60. / 60. / 24.0 / 1000.0
+    diff_date[i] = abs((df[i,:date] - t).value)
   end
   df[:diff_date] = diff_date
-
 
   # new sorting: first chose closest date, than by longitude
   sort!(df, cols=[:diff_date, :diff_lon])
