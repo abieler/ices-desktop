@@ -13,6 +13,7 @@ species = [s for s in split(species_str, ',')]
 
 for sp in species
   tFile = "/home/abieler/rosetta/data/dfms/evaluated/timeSeries/tDFMS.dat"
+  tFile = "../work/input/tDFMS_data.csv"
   run(`julia insitu.jl $tFile`)
 
   outputDir = joinpath(parseUserFile("workingDir:"), "output")
@@ -20,12 +21,15 @@ for sp in species
   fileName = "result_" * sp * ".dat"
   df = readtable(joinpath(outputDir, fileName))
   df[:sampleDensity] = zeros(Float64, size(df, 1))
+  df[:case_name] = Array(AbstractString, size(df, 1))
+  for i in 1:size(df, 1)
+    df[i, :case_name] = matchall(r"\d+\.\d+-[\d]{8}", df[i, :run_name])[1]
+  end
   run_names = unique(df[:run_name])
   run_standard_density = Array(Float64, length(run_names))
   samplePoint = zeros(Float64, 3)
   for run in run_names
     oct, nVars, varNames = build_octree(joinpath(dataDir,run))
-    @show(varNames)
     data = zeros(Float64, nVars)
 
     dateStr = matchall(r"(\d{8}T\d{4})", run)[1]
@@ -37,7 +41,7 @@ for sp in species
     t = DateTime(yy,mm,dd,HH,MM)
     et = str2et(string(t))
 
-    # get SC position and transform from km to m
+    # get Sun position and transform from km to m
     r_SUN, lt = spkpos("SUN", et, "67P/C-G_CK", "NONE", "CHURYUMOV-GERASIMENKO")
     r_SUN /= sqrt(r_SUN[1]^2 + r_SUN[2]^2 + r_SUN[3]^2)
     for i=1:3

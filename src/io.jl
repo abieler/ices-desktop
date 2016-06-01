@@ -162,6 +162,7 @@ function load_user_coordinates(fileName, nDims=3)
       push!(coords, parse(Float64, element))
     end
   end
+  close(iFile)
 
   nPoints = Int(length(coords)/nDims)
   coords = reshape(coords, nDims, nPoints)
@@ -171,9 +172,9 @@ end
 
 function parseUserFile(keyword)
  value = ""
- iFile = open("../userSettings.conf")
- while !eof(iFile)
-   line = readline(iFile)
+ fid = open("../userSettings.conf", "r")
+ while !eof(fid)
+   line = readline(fid)
    if contains(line, keyword)
      line = replace(line, "\n", "")
      line = replace(line, "\r", "")
@@ -181,6 +182,7 @@ function parseUserFile(keyword)
      return value
    end
  end
+ close(fid)
  return value
 end
 
@@ -505,6 +507,7 @@ function AUfromFileName(fileName)
 end
 
 function reshape_insitu_data(runs, sp)
+    @show(sp)
     firstFound = false
     nVars = 0
     varNames = AbstractString[]

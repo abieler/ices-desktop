@@ -52,8 +52,8 @@ else
   doBlankBody = false
 end
 
-t = DateTime(2015,7,15)
-tStop = DateTime(2015,9,15)
+t = DateTime(2015,1,15,0,0)
+tStop = DateTime(2015,3,15,0,0)
 dt = Dates.Minute(10)
 
 while t < tStop

@@ -10,22 +10,37 @@ tt = time_period(ARGS)
 const species = split(parseUserFile("species:"), ',')
 const nSpecies = length(species)
 global const clib = parseUserFile("clibFile:")
-metaFile = parseUserFile("kernelFile:")
-furnsh(metaFile)
+#metaFile = parseUserFile("kernelFile:")
+#furnsh(metaFile)
+furnsh("/home/abieler/ices/ices-desktop/spiceKernels/metafiles/operationalKernels_a.tm")
 const dataDir = parseUserFile("dataDir:")
 
 
 runs = Run[]
 df_runs = build_df(dataDir)
 
-
 # for each time step calculate position of the Sun and pick the best fitting
 # dsmc case for that position. Then compute coordinates of the Rosetta and assign
 # those coordinates to the selected Run. This way all coordinates are sorted
 # to the corresponding Runs. A run is a specific simulation result from AMPS
 # (one output file from AMPS = a Run)
-for t in tt
+
+iSwitchKernels = length(tt)+1
+tSwitchKernels = DateTime(2015,9,15)
+if tt[end] > tSwitchKernels 
+  iSwitchKernels = findfirst((myDate)->myDate > tSwitchKernels, tt)
+end
+
+for (iii, t) in enumerate(tt)
   et = str2et(string(t))
+  if iii == iSwitchKernels
+    unload("/home/abieler/ices/ices-desktop/spiceKernels/metafiles/operationalKernels_a.tm")
+    furnsh("/home/abieler/ices/ices-desktop/spiceKernels/metafiles/operationalKernels_b.tm")
+  end
+
+  if iii % 1000 == 0
+    @show(iii)
+  end
 
   # get SC position and transform from km to m
   r_SC, lt = spkpos("ROSETTA", et, "67P/C-G_CK", "NONE", "CHURYUMOV-GERASIMENKO")
@@ -55,12 +70,6 @@ for run in runs
   data = zeros(Float64, nVars)
   nPoints = length(run.date)
   @show(run.case)
-  println("Variables in simulation:")
-  for var in varNames
-    @show(var)
-  end
-  @show(nPoints)
-  println()
   coords = reshape(run.r_SC, (3,nPoints))
   for i=1:nPoints
     for k=1:3
