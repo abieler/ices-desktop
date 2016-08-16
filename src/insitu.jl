@@ -12,7 +12,7 @@ const nSpecies = length(species)
 global const clib = parseUserFile("clibFile:")
 #metaFile = parseUserFile("kernelFile:")
 #furnsh(metaFile)
-furnsh("/home/abieler/ices/ices-desktop/spiceKernels/metafiles/operationalKernels_a.tm")
+furnsh("/home/abieler/ices/ices-desktop/spiceKernels/metafiles/operationalKernels.tm")
 const dataDir = parseUserFile("dataDir:")
 
 
@@ -25,23 +25,8 @@ df_runs = build_df(dataDir)
 # to the corresponding Runs. A run is a specific simulation result from AMPS
 # (one output file from AMPS = a Run)
 
-iSwitchKernels = length(tt)+1
-tSwitchKernels = DateTime(2015,9,15)
-if tt[end] > tSwitchKernels 
-  iSwitchKernels = findfirst((myDate)->myDate > tSwitchKernels, tt)
-end
-
 for (iii, t) in enumerate(tt)
   et = str2et(string(t))
-  if iii == iSwitchKernels
-    unload("/home/abieler/ices/ices-desktop/spiceKernels/metafiles/operationalKernels_a.tm")
-    furnsh("/home/abieler/ices/ices-desktop/spiceKernels/metafiles/operationalKernels_b.tm")
-  end
-
-  if iii % 1000 == 0
-    @show(iii)
-  end
-
   # get SC position and transform from km to m
   r_SC, lt = spkpos("ROSETTA", et, "67P/C-G_CK", "NONE", "CHURYUMOV-GERASIMENKO")
   for i=1:3
@@ -67,6 +52,8 @@ for run in runs
   oct, nVars, varNames = build_octree(run.case)
   run.variables = varNames
   run.nVars = nVars
+  @show(run.variables)
+  @show(run.nVars)
   data = zeros(Float64, nVars)
   nPoints = length(run.date)
   @show(run.case)

@@ -153,7 +153,6 @@ function get_border(mask)
 end
 
 function load_user_coordinates(fileName, nDims=3)
-
   iFile = open(fileName, "r")
   coords = Float64[]
   while !eof(iFile)
@@ -233,7 +232,7 @@ function load_AMPS_data(fileName::UTF8String)
         c3 = ismatch(r"Number Density", variable)
         c4 = ismatch(r"Translational Temperature", variable)
         c5 = !ismatch(r"Dust", variable)
-        c6 = ismatch(r"V[012]", variable)
+        c6 = ismatch(r"V[012xyz]", variable)
         c7 = ismatch(r"Speed", variable)
         c8 = ismatch(r"Trot", variable)
         if (c1 & c2) | ((c3 | c4 | c6 | c7 | c8) & c5 & !isDustCase)
@@ -257,7 +256,7 @@ function load_AMPS_data(fileName::UTF8String)
     if ismatch(r"ZONE ", line)
       nNodes, nCells = [parse(Int64, value) for value in matchall(r"(\d+)", line)]
       nBlocks = round(Int64, nCells / nCellsPerBlock)
-      if myid() ==1
+      if myid() == 1
         println(" - nNodes: ", nNodes)
         println(" - nCells: ", nCells)
       end
