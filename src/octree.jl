@@ -54,6 +54,57 @@ function build_octree(fileName)
   build_octree(path, bname)
 end
 
+function octree_only(halfSizeX=2e3, halfSizeY=2e3, halfSizeZ=2e3)
+  halfSize = [halfSizeX, halfSizeY, halfSizeZ]
+  root = zeros(3)
+  nCellsX = 5
+  nCellsY = 5
+  nCellsZ = 5
+  isLeaf = true
+  cells = block_cells(root, halfSize, nCellsX, nCellsY, nCellsZ)
+  octree = Block(root, halfSize, isLeaf, Array(Block, 8), cells, nCellsX, nCellsY, nCellsZ)
+  return octree
+end
+
+
+function block_cells(origin, halfSize, nCellsX, nCellsY, nCellsZ)
+  lxCell = halfSize[1] * 2.0 / nCellsX
+  lyCell = halfSize[2] * 2.0 / nCellsY
+  lzCell = halfSize[3] * 2.0 / nCellsZ
+  nCells = nCellsX * nCellsY * nCellsZ
+
+  cells = Array(Cell, nCells)
+  node = zeros(Float64, 3, 8, nCells)
+  ii = 1
+  for iz = 0:nCellsZ-1
+    for iy = 0:nCellsY-1
+      for ix =0:nCellsX-1
+        x = origin[1] - halfSize[1] + lxCell/2.0 + ix * lxCell
+        y = origin[2] - halfSize[2] + lyCell/2.0 + iy * lyCell
+        z = origin[3] - halfSize[3] + lzCell/2.0 + iz * lzCell
+        node[1:3,1,ii] = [x - lxCell/2, y - lyCell/2, z - lzCell/2]
+        node[1:3,2,ii] = [x - lxCell/2, y - lyCell/2, z + lzCell/2]
+        node[1:3,3,ii] = [x - lxCell/2, y + lyCell/2, z - lzCell/2]
+        node[1:3,4,ii] = [x - lxCell/2, y + lyCell/2, z + lzCell/2]
+        node[1:3,5,ii] = [x + lxCell/2, y - lyCell/2, z - lzCell/2]
+        node[1:3,6,ii] = [x + lxCell/2, y - lyCell/2, z + lzCell/2]
+        node[1:3,7,ii] = [x + lxCell/2, y + lyCell/2, z - lzCell/2]
+        node[1:3,8,ii] = [x + lxCell/2, y + lyCell/2, z + lzCell/2]
+
+        cells[ii] = Cell([x,y,z],
+                         [lxCell/2,lyCell/2, lzCell/2],
+                         node[:,:,ii],
+                         lxCell * lyCell * lzCell,
+                         zeros(3,3),
+                         false,
+                         Triangle[],
+                         false)
+        ii += 1
+      end
+    end
+  end
+  return cells
+end
 
 function is_out_of_bounds(oct, r)
   for i=1:3
@@ -133,6 +184,20 @@ function cell_containing_point(oct::Block, point::Array{Float64, 1})
     return false, block.cells[1]
   end
 
+end
+
+function triangles_to_cells!(block, allTriangles)
+  for cell in block.cells
+    for tri in allTriangles
+      for iNode in 1:3
+        foundCell, mycell = cell_containing_point(oct, tri.nodes[:,iNode])
+        if foundCell & (cell.origin == mycell.origin)
+          push!(cell.triangles, tri)
+          break
+        end
+      end
+    end
+  end
 end
 
 function assign_triangles!(oct, allTriangles)

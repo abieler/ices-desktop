@@ -28,9 +28,10 @@ function intersectBool(triangles, pStart, r)
   w = [0.,0.,0.]
 
   for i=1:nTriangles
-    if dot(triangles[i].surfaceNormal, r) > 0.0
-      continue
-    end
+
+    #if dot(triangles[i].surfaceNormal, r) > 0.0
+    #   continue
+    #end
     a = 0.0
     b = 0.0
     @simd for k=1:3

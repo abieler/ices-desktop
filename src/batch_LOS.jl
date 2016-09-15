@@ -52,9 +52,9 @@ else
   doBlankBody = false
 end
 
-t = DateTime(2015,1,15,0,0)
-tStop = DateTime(2015,3,15,0,0)
-dt = Dates.Minute(10)
+t = DateTime(2015,10,5,0,0)
+tStop = DateTime(2015,10,9,0,0)
+dt = Dates.Minute(2)
 
 while t < tStop
     etStr = string(t)

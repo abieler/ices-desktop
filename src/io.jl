@@ -1,6 +1,24 @@
 using Triangles
 using DataFrames
 
+function mesh2vtk(fileName, cos_sza, isInShadow)
+  nTriangles, triIndices, nodeCoords = connectivity_list(fileName)
+
+  const celltype = VTKCellType.VTK_TRIANGLE
+  cells = MeshCell[]
+  for i in 1:nTriangles
+    c = MeshCell(celltype, triIndices[:,i])
+    push!(cells, c)
+  end
+
+  vtk = vtk_grid("mymesh", nodeCoords, cells)
+  vtk_cell_data(vtk, cos_sza, "cos_sza")
+  vtk_cell_data(vtk, round(Int, !isInShadow), "isSunlit")
+
+  outfile = vtk_save(vtk)
+
+end
+
 function save_result(ccd, mask, nVars, varNames, nPixelsX, nPixelsY, etStr)
     prevDir = pwd()
     wrkDir = parseUserFile("workingDir:")
@@ -294,14 +312,12 @@ function load_AMPS_data(fileName::UTF8String)
          numberDensity, minSize, maxSize, varNames)
 end
 
-function load_ply_file(fileName::ASCIIString)
-  if myid() == 1
-    println(" - loading surface mesh...")
-  end
-  nNodes::Int64 = 0
-  nTriangles::Int64 = 0
-  iHeader::Int64 = 0
-  i::Int64 = 0
+
+function connectivity_list(fileName::ASCIIString)
+  nNodes = 0
+  nTriangles = 0
+  iHeader = 0
+  i = 0
   iFile = open(fileName, "r")
   while !eof(iFile)
     line = readline(iFile)
@@ -343,6 +359,16 @@ function load_ply_file(fileName::ASCIIString)
     i += 1
   end
   close(iFile)
+
+  return nTriangles, triIndices, nodeCoords
+end
+
+function load_ply_file(fileName::ASCIIString)
+  if myid() == 1
+    println(" - loading surface mesh...")
+  end
+
+  nTriangles, triIndices, nodeCoords = connectivity_list(fileName)
 
   triangles = build_triangles(nodeCoords, triIndices, nTriangles)
   n_hat = calculate_surface_normals(nodeCoords, triIndices, nTriangles)
