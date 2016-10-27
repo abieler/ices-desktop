@@ -301,12 +301,12 @@ function doIntegration(oct::Block, rPointing, rStart, nVars, allTriangles,
       lMax = get_lMax(lMax, iTriangle, r, lIntersect, llMax)
       reset_data!(nVars, data, dataNew, dataOld)
 
-      distFromStart = 0.0
       norm_rhat_sun = 0.0
       while (!is_out_of_bounds(oct, r) && (distFromStart <= lMax))
         if doCheckShadow
           spkpos!("SUN", et, "67P/C-G_CK", "NONE", "CHURYUMOV-GERASIMENKO", rSun)
         end
+        distFromStart = 0.0
         for k=1:3
           @inbounds distFromStart += ((rStart[k] - r[k]) * (rStart[k] - r[k]))
           if doCheckShadow
@@ -412,9 +412,9 @@ function doIntegrationParallel(oct::Block, rPointing, rStart, nVars, allTriangle
       lMax = get_lMax(lMax, iTriangle, r, lIntersect, llMax)
       reset_data!(nVars, data, dataNew, dataOld)
 
-      distFromStart = 0.0
       norm_rhat_sun = 0.0
       while (!is_out_of_bounds(oct, r) && (distFromStart <= lMax))
+        distFromStart = 0.0
         if doCheckShadow
           spkpos!("SUN", et, "67P/C-G_CK", "NONE", "CHURYUMOV-GERASIMENKO", rSun)
         end

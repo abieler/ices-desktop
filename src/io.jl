@@ -37,7 +37,8 @@ function save_result(ccd, mask, nVars, varNames, nPixelsX, nPixelsY, etStr)
            ccd_sum[ix, iy] += ccdPlt[ix, iy]
          end
        end
-      writedlm("ccd_" * varNames[i] * "_" * etStr * ".dat", ccdPlt)
+      newVarName = replace(varNames[i], Char['[', '[', '/', '^'], '_')
+      writedlm("ccd_" * newVarName * "_" * etStr * ".dat", ccdPlt)
     end
     cd(prevDir)
 end
