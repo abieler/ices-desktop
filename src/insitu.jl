@@ -10,9 +10,14 @@ tt = time_period(ARGS)
 const species = split(parseUserFile("species:"), ',')
 const nSpecies = length(species)
 global const clib = parseUserFile("clibFile:")
-#metaFile = parseUserFile("kernelFile:")
-#furnsh(metaFile)
-furnsh("/home/abieler/ices/ices-desktop/spiceKernels/metafiles/operationalKernels.tm")
+metaFile = parseUserFile("kernelFile:")
+if length(metaFile) > 1
+  furnsh(metaFile)
+else
+  pathToKernels = joinpath(dirname(@__FILE__()), "..", "spiceKernels", "metafiles")
+  furnsh(joinpath(pathToKernels, "operationalKernels.tm")
+end
+
 const dataDir = parseUserFile("dataDir:")
 
 
