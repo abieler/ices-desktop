@@ -204,7 +204,7 @@ function parseUserFile(keyword)
  return value
 end
 
-function load_pointing_vectors(fileName::ASCIIString)
+function load_pointing_vectors(fileName::String)
   df = readtable(fileName, skipstart=0, separator=',', header=false)
   const nVectors = size(df)[1]
   r_hat = zeros(nVectors,3)
@@ -220,7 +220,7 @@ function load_pointing_vectors(fileName::ASCIIString)
   return r, r_hat, nVectors
 end
 
-function load_AMPS_data(fileName::UTF8String)
+function load_AMPS_data(fileName::String)
   f = open(fileName, "r")
   nNodes = 0
   nCells = 0
@@ -229,7 +229,7 @@ function load_AMPS_data(fileName::UTF8String)
   nHeaderRows = 2
 
   varIndexes = [1,2,3]
-  varNames = ASCIIString["x", "y", "z"]
+  varNames = String["x", "y", "z"]
   minSize = Float64[]
   maxSize = Float64[]
   while !eof(f)
@@ -314,7 +314,7 @@ function load_AMPS_data(fileName::UTF8String)
 end
 
 
-function connectivity_list(fileName::ASCIIString)
+function connectivity_list(fileName::String)
   nNodes = 0
   nTriangles = 0
   iHeader = 0
@@ -364,7 +364,7 @@ function connectivity_list(fileName::ASCIIString)
   return nTriangles, triIndices, nodeCoords
 end
 
-function load_ply_file(fileName::ASCIIString)
+function load_ply_file(fileName::String)
   if myid() == 1
     println(" - loading surface mesh...")
   end
@@ -613,29 +613,6 @@ function save_interpolation_results(nVars, result, coords, fileName="interp_outp
   end
 end
 
-function interpolate(nVars, coords, oct)
-  nPoints = size(coords, 2)
-  data = zeros(Float64, nVars)
-  myPoint = zeros(Float64, 3)
-  result = zeros(Float64, nVars, nPoints)
-  norms = Float64[]
-  for i=1:nPoints
-    for k=1:3
-      myPoint[k] = coords[k,i]
-    end
-
-    didFindCell, myCell = cell_containing_point(oct, myPoint)
-    if (didFindCell == true)
-      triLinearInterpolation!(myCell, myPoint, data, 0.0, 0.0, 0.0)
-    end
-
-    for j=1:nVars
-      result[j,i] = data[j]
-      data[j] = 0.0
-    end
-  end
-  return result
-end
 
 
 function time_period(ARGS)

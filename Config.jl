@@ -3,44 +3,87 @@ using Requests
 import Requests: get
 
 function get_spice(path)
-root_url = "http://naif.jpl.nasa.gov/pub/naif/toolkit/C/"
+    root_url = "http://naif.jpl.nasa.gov/pub/naif/toolkit/C/"
 
-@linux_only platform_url = "PC_Linux_GCC_64bit/"
-@osx_only platform_url = "MacIntel_OSX_AppleC_64bit/"
-@windows_only println("Windows not supported")
+    if is_linux()
+        platform_url = "PC_Linux_GCC_64bit/"
+    elseif is_osx()
+        platform_url = "MacIntel_OSX_AppleC_64bit/"
+    elseif is_windows()
+        println("Windows not supported")
+        quit()
+    end
 
-pkg_name = "packages/cspice.tar.Z"
+    pkg_name = "packages/cspice.tar.Z"
 
-full_url = root_url * platform_url * pkg_name
-println()
-println(" - Downloading SPICE library:")
-println("   ", full_url)
-print("   This might take a moment...   ")
-cspice_archive = get(full_url)
-println("OK")
-save(cspice_archive, joinpath(path, "cspice.tar.Z"))
+    full_url = root_url * platform_url * pkg_name
+    println()
+    println(" - Downloading SPICE library:")
+    println("   ", full_url)
+    print("   This might take a moment...   ")
+    for j in 1:5
+        try
+            cspice_archive = get(full_url)
+            save(cspice_archive, joinpath(path, "cspice.tar.Z"))
+            println("OK")
+            break
+        catch
+            println()
+            print("   could not download cspice, trying again...")
+            sleep(1)
+        end
+    end
+    println()
+    println("   giving up!")
+    return 1
 end
 
 function get_spice_kernels()
-  url = "https://www.dropbox.com/s/7qr8e1kmeij2e71/spiceKernels.zip?dl=1"
+  #url = "https://www.dropbox.com/s/7qr8e1kmeij2e71/spiceKernels.zip?dl=1"
+  url = "https://dl.dropboxusercontent.com/u/1910400/ices-desktop-data/spiceKernels.zip"
   println()
   println(" - Downloading SPICE kernels:")
   println("   ", url)
   print("   This might take a moment...   ")
-  kernels = get(url)
-  save(kernels, "spiceKernels.zip")
-  println("OK")
+  for j in 1:5
+      try
+          kernels = get(url)
+          save(kernels, "spiceKernels.zip")
+          println("OK")
+          break
+      catch 
+          println()
+          print("could not download kernels, trying again...")
+          sleep(1)
+      end
+  end
+  println()
+  println("   giving up!")
+  return 1
 end
 
 function get_additional_data()
-  url = "https://www.dropbox.com/s/rp23i57dgwjpkob/additionalData.zip?dl=1"
+  url = "https://dl.dropboxusercontent.com/u/1910400/ices-desktop-data/additionalData.zip"
+  #url = "https://www.dropbox.com/s/rp23i57dgwjpkob/additionalData.zip?dl=1"
   println()
   println(" - Downloading additional data:")
   println("   ", url)
   print("   This might take a moment...   ")
-  data = get(url)
-  save(data, "additionalData.zip")
-  println("OK")
+  for j in 1:5
+      try
+          data = get(url)
+          save(data, "additionalData.zip")
+          println("OK")
+          return 0 
+      catch
+          println()
+          print("   could not download additionalData.zip, trying again...")
+          sleep(1)
+      end
+  end
+  println()
+  println("   giving up!")
+  return 1
 end
 
 
@@ -149,7 +192,7 @@ function get_working_dir()
   while !eof(iFile)
     line = readline(iFile)
     if contains(line, keyword)
-      value = string(bytestring(split(line, keyword)[2][1:end-1]))
+      value = string(string(split(line, keyword)[2][1:end-1]))
       close(iFile)
       return value
     end
@@ -212,6 +255,7 @@ function config_workingdir(ARGS)
     end
 
     if isdir(rundir)
+      println()
       println(" - datadir already exists")
       if (isdir(joinpath(rundir, "lib")) | isdir(joinpath(rundir, "input")))
         print(" - directory 'lib', 'input' or 'output' already exist, replace them? (y/n): ")
@@ -362,14 +406,14 @@ function config_docheckshadow(ARGS)
 end
 
 function parseCmdLineArg()
-  arg = strip(string(bytestring(readline(STDIN)[1:end-1])))
+  arg = strip(string(string(readline(STDIN)[1:end-1])))
 end
 ################################################################################
 # start main
 ################################################################################
 
 os = "operatingSystem"
-@linux?  linux() : osx()
+is_linux() ?  linux() : osx()
 
 if lowercase(ARGS[1]) == "--workingdir"
   config_workingdir(ARGS)
@@ -491,7 +535,10 @@ elseif lowercase(ARGS[1]) == "--auto"
     print("   --kernelfile ", defaultFile, "   ")
     config_kernelfile(["", defaultFile])
     println("OK")
-    rm("spiceKernels.zip")
+    try
+        rm("spiceKernels.zip")
+    catch
+    end
   else
     println(" - Default SPICE kernels not found: ", defaultFile )
     println(" - Please set it up later with 'Julia Config.jl --kernelfile <path to kernelfile>'")
@@ -515,7 +562,7 @@ elseif lowercase(ARGS[1]) == "--auto"
   config_data_file(["", datafile])
 
   println()
-  println(" - You can check/modify your settings in the .userSettings.conf file.")
+  println(" - You can check/modify your settings in the userSettings.conf file.")
   println()
   println(" - Mandatory settings done, continue with optional settings? ")
   println("   skip a parameter by hitting enter without giving an input.")
@@ -552,6 +599,5 @@ elseif lowercase(ARGS[1]) == "--auto"
       println("OK")
     end
   end
-
 
 end

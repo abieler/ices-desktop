@@ -309,19 +309,6 @@ function split_block(node::Block)
   node.children[8] = Block(xc8, node.halfSize/2, 1, Array(Block, 8), Array(Cell,1), nx, ny, nz)
 end
 
-function octant_containing_point(point::Array{Float64,1}, block::Block)
-    octant::Int64 = 1
-    if (point[1] >= block.origin[1])
-      octant += 4
-    end
-    if (point[2] >= block.origin[2])
-      octant += 2
-    end
-    if (point[3] >= block.origin[3])
-      octant += 1
-    end
-  return octant
-end
 
 function insert_child(point::Array{Float64,1}, parent::Block, child::Block)
   if (parent.isLeaf && point != parent.origin)
@@ -408,3 +395,4 @@ function interpolate(nVars, coords, oct)
   end
   return result
 end
+
